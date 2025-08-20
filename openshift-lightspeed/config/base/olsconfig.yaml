@@ -1,0 +1,30 @@
+apiVersion: ols.openshift.io/v1alpha1
+kind: OLSConfig
+metadata:
+  name: cluster
+  namespace: openshift-lightspeed
+spec:
+  llm:
+    providers:
+    - name: huggingface-local
+      type: openai
+      url: "http://microsoft-dialoglpt-medium-predictor.ai-models.svc.cluster.local"
+      models:
+      - name: "microsoft/DialoGPT-medium"
+        url: "http://microsoft-dialoglpt-medium-predictor.ai-models.svc.cluster.local/v1/chat/completions"
+        credentials:
+          apiTokenFrom:
+            secretRef:
+              name: lightspeed-model-config
+              key: api-key
+  rag:
+    providers:
+    - name: redis
+      type: redis
+      url: "redis://redis.openshift-lightspeed.svc.cluster.local:6379"
+  logging:
+    appLogLevel: info
+  conversationCache:
+    type: redis
+    redis:
+      url: "redis://redis.openshift-lightspeed.svc.cluster.local:6379"
