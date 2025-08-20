@@ -1,0 +1,11 @@
+apiVersion: serving.kserve.io/v1beta1
+kind: InferenceService
+metadata:
+  name: flan-t5-base
+  namespace: redhat-ods-applications
+spec:
+  predictor:
+    model:
+      modelFormat:
+        name: transformers
+      storageUri: "https://huggingface.co/google/flan-t5-base"
