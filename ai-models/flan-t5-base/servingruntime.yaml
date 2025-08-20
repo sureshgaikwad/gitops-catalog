@@ -1,0 +1,23 @@
+apiVersion: serving.kserve.io/v1alpha1
+kind: ServingRuntime
+metadata:
+  name: huggingface-runtime
+  namespace: redhat-ods-applications
+spec:
+  supportedModelFormats:
+    - name: transformers
+      version: "1"
+      autoSelect: true
+  containers:
+    - name: kserve-container
+      image: quay.io/opendatahub/huggingface-transformers:latest
+      args:
+        - --model-name={{.Name}}
+        - --model-dir=/mnt/models
+      resources:
+        requests:
+          cpu: "1"
+          memory: 2Gi
+        limits:
+          cpu: "2"
+          memory: 4Gi
