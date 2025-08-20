@@ -1,5 +1,0 @@
-apiVersion: v2
-name: openshift-lightspeed-config
-description: OpenShift Lightspeed Configuration Helm Chart
-version: 0.1.0
-appVersion: "1.0"
