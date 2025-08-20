@@ -1,0 +1,21 @@
+namespace: openshift-lightspeed
+enableRAG: true
+enableLogging: true
+conversationCache: true
+logLevel: info
+
+modelConfig:
+  name: "microsoft/DialoGPT-medium"
+  endpoint: "http://microsoft-dialoglpt-medium-predictor.ai-models.svc.cluster.local"
+  namespace: "ai-models"
+
+redis:
+  enabled: true
+  image: redis:7-alpine
+  resources:
+    requests:
+      cpu: 100m
+      memory: 128Mi
+    limits:
+      cpu: 200m
+      memory: 256Mi
