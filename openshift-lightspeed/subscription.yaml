@@ -5,7 +5,6 @@ metadata:
     operators.coreos.com/lightspeed-operator.openshift-lightspeed: ""
   name: lightspeed-operator
   namespace: openshift-lightspeed
-  uid: 22d7df31-6dee-4a7e-91d9-1c4b22979cf8
 spec:
   channel: stable
   installPlanApproval: Automatic
