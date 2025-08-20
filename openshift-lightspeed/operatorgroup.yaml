@@ -1,0 +1,11 @@
+apiVersion: operators.coreos.com/v1
+kind: OperatorGroup
+metadata:
+  annotations:
+  name: lightspeed-operator-group
+  namespace: openshift-lightspeed
+  uid: 57d41a36-9872-4103-90c0-3ddbce03144d
+spec:
+  targetNamespaces:
+  - openshift-lightspeed
+  upgradeStrategy: Default
