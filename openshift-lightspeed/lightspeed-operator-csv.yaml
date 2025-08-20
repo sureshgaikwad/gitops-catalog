@@ -65,7 +65,6 @@ metadata:
     operators.coreos.com/lightspeed-operator.openshift-lightspeed: ""
   name: lightspeed-operator.v1.0.3
   namespace: openshift-lightspeed
-  uid: 0862088d-a7fe-4ccf-9d41-0a480b127a88
 spec:
   apiservicedefinitions: {}
   cleanup:
