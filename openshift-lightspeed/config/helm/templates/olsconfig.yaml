@@ -1,0 +1,36 @@
+apiVersion: ols.openshift.io/v1alpha1
+kind: OLSConfig
+metadata:
+  name: cluster
+  namespace: {{ .Values.namespace }}
+spec:
+  llm:
+    providers:
+    - name: huggingface-local
+      type: openai
+      url: {{ .Values.modelConfig.endpoint }}
+      models:
+      - name: {{ .Values.modelConfig.name }}
+        url: "{{ .Values.modelConfig.endpoint }}/v1/chat/completions"
+        credentials:
+          apiTokenFrom:
+            secretRef:
+              name: lightspeed-model-config
+              key: api-key
+  {{- if .Values.enableRAG }}
+  rag:
+    providers:
+    - name: redis
+      type: redis
+      url: "redis://redis.{{ .Values.namespace }}.svc.cluster.local:6379"
+  {{- end }}
+  {{- if .Values.enableLogging }}
+  logging:
+    appLogLevel: {{ .Values.logLevel }}
+  {{- end }}
+  {{- if .Values.conversationCache }}
+  conversationCache:
+    type: redis
+    redis:
+      url: "redis://redis.{{ .Values.namespace }}.svc.cluster.local:6379"
+  {{- end }}
