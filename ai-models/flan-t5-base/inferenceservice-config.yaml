@@ -2,7 +2,7 @@ apiVersion: v1
 kind: ConfigMap
 metadata:
   name: inferenceservice-config
-  namespace: redhat-ods-applications
+  namespace: models
 data:
   storageInitializer: |-
     { "image" : "quay.io/opendatahub/kserve-storage-initializer:release-1.14"}
