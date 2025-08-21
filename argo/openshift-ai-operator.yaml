@@ -6,7 +6,7 @@ metadata:
 spec:
   project: default
   source:
-    repoURL: https://github.com/your-org/gitops-catalog.git   # your GitOps repo
+    repoURL: https://github.com/sureshgaikwad/gitops-catalog.git   # your GitOps repo
     targetRevision: main
     path: operators/openshift-ai
   destination:
