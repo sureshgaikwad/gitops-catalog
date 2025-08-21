@@ -1,0 +1,17 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: inferenceservice-config
+  namespace: redhat-ods-applications
+data:
+  storageInitializer: |-
+    { "image" : "quay.io/opendatahub/kserve-storage-initializer:release-1.14"}
+  transformer: |-
+    { "image" : "quay.io/opendatahub/kserve-transformer:release-1.14"}
+  predictor: |-
+    {
+      "tensorflow" : { "image": "quay.io/opendatahub/kserve-tensorflowserver:release-1.14" },
+      "pytorch"    : { "image": "quay.io/opendatahub/kserve-pytorchserver:release-1.14" },
+      "sklearn"    : { "image": "quay.io/opendatahub/kserve-sklearnserver:release-1.14" },
+      "xgboost"    : { "image": "quay.io/opendatahub/kserve-xgbserver:release-1.14" }
+    }
