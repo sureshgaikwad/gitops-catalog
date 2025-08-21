@@ -1,8 +1,5 @@
 apiVersion: operators.coreos.com/v1
 kind: OperatorGroup
 metadata:
-  name: openshift-ai-operator-group
-  namespace: redhat-ods-operator
-spec:
-  targetNamespaces: []
-  upgradeStrategy: Default
+  name: rhods-operator
+  namespace: redhat-ods-operator 
