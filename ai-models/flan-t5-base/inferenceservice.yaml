@@ -2,7 +2,7 @@ apiVersion: serving.kserve.io/v1beta1
 kind: InferenceService
 metadata:
   name: flan-t5-base
-  namespace: redhat-ods-applications
+  namespace: models
 spec:
   predictor:
     model:
