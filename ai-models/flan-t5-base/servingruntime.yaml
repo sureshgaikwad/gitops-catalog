@@ -2,7 +2,7 @@ apiVersion: serving.kserve.io/v1alpha1
 kind: ServingRuntime
 metadata:
   name: huggingface-runtime
-  namespace: redhat-ods-applications
+  namespace: models
 spec:
   supportedModelFormats:
     - name: transformers
