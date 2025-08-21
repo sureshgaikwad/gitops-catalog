@@ -5,7 +5,7 @@ metadata:
   namespace: redhat-ods-operator
 spec:
   channel: stable
-  name: rhods-operator
+  name: openshift-ai
   source: redhat-operators
   sourceNamespace: openshift-marketplace
   installPlanApproval: Automatic
