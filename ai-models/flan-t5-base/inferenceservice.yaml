@@ -8,4 +8,5 @@ spec:
     model:
       modelFormat:
         name: transformers
-      storageUri: "https://huggingface.co/google/flan-t5-base"
+      storageUri: "https://huggingface.co/google/flan-t5-base/resolve/main"
+      runtime: hf-transformers-runtime
