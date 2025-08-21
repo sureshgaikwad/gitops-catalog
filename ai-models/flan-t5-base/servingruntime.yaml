@@ -1,19 +1,19 @@
 apiVersion: serving.kserve.io/v1alpha1
 kind: ServingRuntime
 metadata:
-  name: huggingface-runtime
-  namespace: models
+  name: hf-transformers-runtime
+  namespace: redhat-ods-applications
 spec:
   supportedModelFormats:
     - name: transformers
       version: "1"
       autoSelect: true
   containers:
-    - name: kserve-container
-      image: quay.io/opendatahub/huggingface-transformers:latest
+    - name: hf-transformers
+      image: quay.io/sureshgaikwad/hf-runtime:latest
       args:
-        - --model-name={{.Name}}
-        - --model-dir=/mnt/models
+        - --model_name={{.Name}}
+        - --model_dir=/mnt/models
       resources:
         requests:
           cpu: "1"
