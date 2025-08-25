@@ -1,7 +1,8 @@
 apiVersion: serving.kserve.io/v1alpha1
 kind: ServingRuntime
 metadata:
- name: vllm-cuda-runtime # OPTIONAL CHANGE: set a unique name
+ name: vllm-cuda-runtime
+ namespace: models
  annotations:
    openshift.io/display-name: vLLM NVIDIA GPU ServingRuntime for KServe
  labels:
