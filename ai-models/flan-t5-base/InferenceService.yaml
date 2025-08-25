@@ -1,0 +1,26 @@
+apiVersion: serving.kserve.io/v1beta1
+kind: InferenceService
+metadata:
+  name: flan-t5-base
+  namespace: models
+  annotations:
+    argocd.argoproj.io/sync-wave: "1"
+    # If Argo validates before the CRDs are ready, keep this to avoid dry-run failures.
+    argocd.argoproj.io/sync-options: SkipDryRunOnMissingResource=true
+spec:
+  predictor:
+    model:
+      # Use the built-in CPU HF runtime shipped by RHOAI (name may vary slightly per version).
+      # Run: `oc get servingruntimes -n models | grep huggingface`
+      runtime: mlserver-huggingface
+      modelFormat:
+        name: pytorch
+      # Mounts the PVC at /mnt/models/<subpath>
+      storageUri: pvc://hf-pvc/flan-t5-base
+      resources:
+        requests:
+          cpu: "1"
+          memory: "2Gi"
+        limits:
+          cpu: "2"
+          memory: "4Gi"
