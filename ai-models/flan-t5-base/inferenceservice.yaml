@@ -4,7 +4,8 @@ metadata:
   annotations:
     openshift.io/display-name: mistral-small-3-1-24b-instruct-2503-quantized-w4a16 
     serving.kserve.io/deploymentMode: RawDeployment
-  name: mistral-small-3-1-24b-instruct-2503-quantized-w4a16      
+  name: mistral-small-3-1-24b-instruct-2503-quantized-w4a16
+  namespace: models
   labels:
     opendatahub.io/dashboard: 'true'
 spec:
