@@ -5,4 +5,4 @@ resources:
   - namespace.yaml
   - pvc.yaml
   - inferenceservice.yaml
-  # - servingruntime-hf.yaml   # uncomment only if you DON'T already have a HuggingFace ServingRuntime
+  - servingruntime-hf.yaml   # uncomment only if you DON'T already have a HuggingFace ServingRuntime
