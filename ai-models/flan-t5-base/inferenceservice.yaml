@@ -6,14 +6,6 @@ metadata:
 spec:
   predictor:
     model:
-      runtime: hf-mlserver-runtime
       modelFormat:
-        name: pytorch
+        name: huggingface
       storageUri: pvc://hf-pvc/flan-t5-base
-    resources:
-      requests:
-        cpu: "2"
-        memory: "4Gi"
-      limits:
-        cpu: "4"
-        memory: "8Gi"
