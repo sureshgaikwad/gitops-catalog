@@ -20,7 +20,6 @@ spec:
         limits:
           cpu: '2'			# this is model specific
           memory: 8Gi		# this is model specific
-          nvidia.com/gpu: '1'	# this is accelerator specific
         requests:			# same comment for this block
           cpu: '1'
           memory: 4Gi
