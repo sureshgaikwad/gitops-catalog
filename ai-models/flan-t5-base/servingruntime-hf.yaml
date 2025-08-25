@@ -1,18 +1,29 @@
 apiVersion: serving.kserve.io/v1alpha1
 kind: ServingRuntime
 metadata:
-  name: hf-mlserver-runtime
+  name: huggingface-mlserver
   namespace: models
 spec:
   supportedModelFormats:
-    - name: pytorch
-      version: "1"
+    - name: huggingface
+      version: "*"
       autoSelect: true
   containers:
     - name: kserve-container
-      image: seldonio/mlserver:1.4.0
-      args:
-        - --model-store=/mnt/models
-      env:
-        - name: MLSERVER_MODELS_DIR
-          value: /mnt/models
+      image: seldonio/mlserver:1.3.5
+      command: ["/opt/mlserver/mlserver"]
+      args: ["start", "--model-store=/mnt/models"]
+      resources:
+        requests:
+          cpu: "2"
+          memory: "4Gi"
+        limits:
+          cpu: "4"
+          memory: "8Gi"
+      volumeMounts:
+        - name: model-pvc
+          mountPath: /mnt/models
+  volumes:
+    - name: model-pvc
+      persistentVolumeClaim:
+        claimName: hf-pvc
