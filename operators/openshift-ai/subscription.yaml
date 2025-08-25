@@ -8,3 +8,5 @@ spec:
   channel: stable
   source: redhat-operators
   sourceNamespace: openshift-marketplace
+  annotations:
+    argocd.argoproj.io/sync-wave: "-1"
