@@ -1,0 +1,26 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: preload-flan-t5-base
+  namespace: models
+spec:
+  template:
+    spec:
+      restartPolicy: Never
+      containers:
+        - name: preload
+          image: huggingface/transformers-pytorch-cpu:4.37.2
+          command:
+            - /bin/bash
+            - -c
+            - |
+              set -e
+              mkdir -p /mnt/models/flan-t5-base
+              python -m huggingface_hub download google/flan-t5-base --local-dir /mnt/models/flan-t5-base
+          volumeMounts:
+            - name: model-pvc
+              mountPath: /mnt/models
+      volumes:
+        - name: model-pvc
+          persistentVolumeClaim:
+            claimName: hf-pvc
