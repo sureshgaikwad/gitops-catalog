@@ -4,7 +4,8 @@ metadata:
   annotations:
     openshift.io/display-name: Llama-4-Scout-17B-16E-Instruct-FP8-dynamic 
     serving.kserve.io/deploymentMode: RawDeployment
-  name: llama-4-instruct-fp8-dynamic        
+  name: llama-4-instruct-fp8-dynamic   
+  namespace: ai-models
   labels:
     opendatahub.io/dashboard: 'true'
 spec:
