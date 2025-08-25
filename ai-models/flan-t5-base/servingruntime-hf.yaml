@@ -1,36 +1,25 @@
 apiVersion: serving.kserve.io/v1alpha1
 kind: ServingRuntime
 metadata:
-  name: mlserver-huggingface
+  name: hf-mlserver-runtime
   namespace: models
-  annotations:
-    argocd.argoproj.io/sync-wave: "1"
 spec:
   supportedModelFormats:
     - name: pytorch
       version: "1"
       autoSelect: true
-    - name: transformers
-      autoSelect: true
   containers:
-    - name: kserve-container   # MUST be exactly this
-      image: quay.io/modh/mlserver-huggingface:stable-cpu
-      # If your image differs, replace with the CPU build for mlserver-huggingface
-      args: ["--model-store=/models"]
+    - name: kserve-container
+      image: seldonio/mlserver:1.4.0
+      args:
+        - --model-store=/mnt/models
       env:
         - name: MLSERVER_MODELS_DIR
-          value: /models
-      ports:
-        - containerPort: 8080
-          name: http
-          protocol: TCP
-      resources:
-        requests:
-          cpu: "1"
-          memory: "2Gi"
-        limits:
-          cpu: "2"
-          memory: "4Gi"
-  grpcDataEndpoint: "port:8081"
-  grpcEndpoint: "port:8081"
-  httpEndpoint: "port:8080"
+          value: /mnt/models
+      volumeMounts:
+        - name: model-storage
+          mountPath: /mnt/models
+  volumes:
+    - name: model-storage
+      persistentVolumeClaim:
+        claimName: hf-pvc
