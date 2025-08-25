@@ -6,15 +6,14 @@ metadata:
 spec:
   predictor:
     model:
+      runtime: hf-mlserver-runtime
       modelFormat:
-        name: huggingface
-      runtime: mlserver-huggingface
-      storage:
-        path: /mnt/models/flan-t5-base   # 👈 path inside container
-    volumes:
-      - name: model-storage
-        persistentVolumeClaim:
-          claimName: hf-pvc              # 👈 your EBS PVC
-    volumeMounts:
-      - name: model-storage
-        mountPath: /mnt/models           # 👈 mount PVC here
+        name: pytorch
+      storageUri: pvc://hf-pvc/flan-t5-base
+    resources:
+      requests:
+        cpu: "2"
+        memory: "4Gi"
+      limits:
+        cpu: "4"
+        memory: "8Gi"
