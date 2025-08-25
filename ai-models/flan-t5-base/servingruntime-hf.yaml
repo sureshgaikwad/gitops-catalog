@@ -16,10 +16,3 @@ spec:
       env:
         - name: MLSERVER_MODELS_DIR
           value: /mnt/models
-      volumeMounts:
-        - name: model-storage
-          mountPath: /mnt/models
-  volumes:
-    - name: model-storage
-      persistentVolumeClaim:
-        claimName: hf-pvc
