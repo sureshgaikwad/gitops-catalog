@@ -1,12 +1,26 @@
 apiVersion: serving.kserve.io/v1beta1
 kind: InferenceService
 metadata:
-  name: flan-t5-base
-  namespace: models
+  annotations:
+    openshift.io/display-name: mistral-small-3-1-24b-instruct-2503-quantized-w4a16 
+    serving.kserve.io/deploymentMode: RawDeployment
+  name: mistral-small-3-1-24b-instruct-2503-quantized-w4a16      
+  labels:
+    opendatahub.io/dashboard: 'true'
 spec:
   predictor:
+    maxReplicas: 1
+    minReplicas: 1
     model:
       modelFormat:
-        name: transformers
-      storageUri: "https://huggingface.co/google/flan-t5-base/resolve/main"
-      runtime: hf-transformers-runtime
+        name: vLLM
+      name: ''
+      resources:
+        limits:
+          cpu: '2'			# this is model specific
+          memory: 8Gi		# this is model specific
+        requests:			# same comment for this block
+          cpu: '1'
+          memory: 4Gi
+      runtime: vllm-cuda-runtime	# must match the ServingRuntime name above
+      storageUri: oci://registry.redhat.io/rhelai1/modelcar-mistral-small-3-1-24b-instruct-2503-quantized-w4a16:1.5
