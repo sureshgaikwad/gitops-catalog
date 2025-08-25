@@ -7,9 +7,9 @@ metadata:
     argocd.argoproj.io/sync-wave: "0"
 spec:
   accessModes:
-    - ReadWriteOnce
+    - ReadWriteOnce     # EBS supports RWO only
   resources:
     requests:
       storage: 20Gi
-  storageClassName: gp3-csi
-  volumeMode: Block
+  volumeMode: Filesystem      # 👈 keep filesystem mode
+  storageClassName: gp3-csi   # check with oc get sc
