@@ -1,0 +1,11 @@
+apiVersion: operators.coreos.com/v1
+kind: OperatorGroup
+metadata:
+  annotations:
+    argocd.argoproj.io/sync-wave: "0"
+  name: openshift-lightspeed-dsxm4
+  namespace: openshift-lightspeed
+spec:
+  targetNamespaces:
+  - openshift-lightspeed
+  upgradeStrategy: Default
