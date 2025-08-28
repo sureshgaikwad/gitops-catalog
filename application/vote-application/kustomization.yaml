@@ -1,0 +1,63 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+replicas:
+- count: 2
+  name: vote-ui
+patches:
+- patch: |-
+    - op: add
+      path: /metadata/annotations
+      value:
+        argocd.argoproj.io/sync-wave: "0"
+  target:
+    group: apps
+    kind: Deployment
+    name: vote-api
+    version: v1
+- patch: |-
+    - op: add
+      path: /metadata/annotations
+      value:
+        argocd.argoproj.io/sync-wave: "1"
+  target:
+    kind: Service
+    name: vote-api
+    version: v1
+- patch: |-
+    - op: add
+      path: /metadata/annotations
+      value:
+        argocd.argoproj.io/sync-wave: "2"
+  target:
+    group: apps
+    kind: Deployment
+    name: vote-ui
+    version: v1
+- patch: |-
+    - op: add
+      path: /metadata/annotations
+      value:
+        argocd.argoproj.io/sync-wave: "3"
+  target:
+    kind: Service
+    name: vote-ui
+    version: v1
+- patch: |-
+    - op: add
+      path: /metadata/annotations
+      value:
+        argocd.argoproj.io/sync-wave: "4"
+  target:
+    kind: Route
+    name: vote-ui
+    version: v1
+resources:
+- api-deployment.yaml
+- api-service.yaml
+- ui-deployment.yaml
+- ui-service.yaml
+- ui-route.yaml
+images:
+- digest: sha256:c98663bf9058728eeeebddd5ced22249f71cdafc158c0bae00721c66bfc5b6d8
+  name: quay.io/sureshgaikwad/vote-ui:latest
+  newName: quay.io/sureshgaikwad/prod-vote-ui
