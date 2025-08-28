@@ -6,6 +6,7 @@ metadata:
     serving.kserve.io/deploymentMode: RawDeployment
     argocd.argoproj.io/sync-wave: "1"
   name: mistral-small-24b-instruct-quantized       # specify model name. This value will be used to invoke the model in the payload
+  namespace: models
   labels:
     opendatahub.io/dashboard: 'true'
 spec:
@@ -27,6 +28,9 @@ spec:
           nvidia.com/gpu: '1'
       runtime: vllm-cuda-runtime	# must match the ServingRuntime name above
       storageUri: oci://registry.redhat.io/rhelai1/modelcar-mistral-small-3-1-24b-instruct-2503-quantized-w4a16:1.5
+      args:
+        - "--max-model-len=8192"
+        - "--gpu-memory-utilization=0.95"
     tolerations:
     - effect: NoSchedule
       key: nvidia.com/gpu
