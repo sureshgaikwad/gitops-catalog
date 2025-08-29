@@ -11,7 +11,7 @@ spec:
     providers:
       - name: red_hat_openshift_ai
         type: rhoai_vllm
-        url: "https://mistral-small-24b-instruct-quantized-models.apps.rosa.i6x3z5p5a2r0i4l.7ued.p3.openshiftapps.com"
+        url: "https://mistral-small-24b-instruct-quantized-models.apps.rosa.i6x3z5p5a2r0i4l.7ued.p3.openshiftapps.com/v1"
         credentialsSecretRef:
           name: rhoai-api-keys
         models:
