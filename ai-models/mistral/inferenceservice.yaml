@@ -3,7 +3,7 @@ kind: InferenceService
 metadata:
   annotations:
     openshift.io/display-name: mistral-small-3-1-24b-instruct-2503-quantized-w4a16 # OPTIONAL CHANGE
-    serving.kserve.io/deploymentMode: RawDeployment
+    serving.kserve.io/deploymentMode: Serverless
     security.opendatahub.io/enable-auth: "true"
     argocd.argoproj.io/sync-wave: "1"
   name: mistral-small-24b-instruct-quantized       # specify model name. This value will be used to invoke the model in the payload
