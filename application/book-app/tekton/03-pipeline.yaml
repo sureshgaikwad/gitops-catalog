@@ -1,0 +1,91 @@
+apiVersion: tekton.dev/v1
+kind: Pipeline
+metadata:
+  name: bookstore-ci-pipeline
+  namespace: sgaikwad
+spec:
+  params:
+  - name: git-url
+    type: string
+    description: Git repository URL
+    default: https://github.com/sureshgaikwad/sample-bookstore-application
+  - name: git-revision
+    type: string
+    description: Git revision to build
+    default: main
+  - name: image-name
+    type: string
+    description: Name of the container image to build
+    default: quay.io/sureshgaikwad/app
+  - name: image-tag
+    type: string
+    description: Tag for the container image
+    default: latest
+
+  workspaces:
+  - name: shared-workspace
+    description: Shared workspace for the pipeline
+  - name: dockerconfig-secret
+    description: Docker config for pushing to registry
+  - name: gitops-auth
+    description: Git credentials for GitOps repository updates
+    optional: true
+
+  tasks:
+  - name: git-clone
+    taskRef:
+      name: git-clone
+    params:
+    - name: URL
+      value: $(params.git-url)
+    - name: REVISION
+      value: $(params.git-revision)
+    workspaces:
+    - name: output
+      workspace: shared-workspace
+
+  - name: build-and-push
+    taskRef:
+      name: buildah
+    runAfter:
+    - git-clone
+    params:
+    - name: IMAGE
+      value: $(params.image-name):$(params.image-tag)
+    - name: DOCKERFILE
+      value: ./Dockerfile
+    - name: CONTEXT
+      value: .
+    - name: TLS_VERIFY
+      value: "false"
+    workspaces:
+    - name: source
+      workspace: shared-workspace
+    - name: dockerconfig
+      workspace: dockerconfig-secret
+
+  - name: update-gitops
+    taskRef:
+      name: update-gitops-repo
+    runAfter:
+    - build-and-push
+    params:
+    - name: git-url
+      value: https://github.com/sureshgaikwad/gitops-catalog.git
+    - name: git-revision
+      value: main
+    - name: app-path
+      value: application/book-app
+    - name: image-name
+      value: $(params.image-name)
+    - name: image-tag
+      value: $(params.image-tag)
+    - name: git-user-name
+      value: "Tekton Pipeline Bot"
+    - name: git-user-email
+      value: "tekton@sureshgaikwad.com"
+    workspaces:
+    - name: source
+      workspace: shared-workspace
+    - name: gitops-auth
+      workspace: gitops-auth
