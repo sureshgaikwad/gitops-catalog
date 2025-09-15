@@ -2,7 +2,7 @@ apiVersion: triggers.tekton.dev/v1beta1
 kind: TriggerTemplate
 metadata:
   name: bookstore-trigger-template
-  namespace: sgaikwad
+  namespace: bookstore
 spec:
   params:
   - name: git-revision
@@ -14,7 +14,7 @@ spec:
     kind: PipelineRun
     metadata:
       generateName: bookstore-pipeline-run-
-      namespace: sgaikwad
+      namespace: bookstore
     spec:
       serviceAccountName: pipeline-service-account
       pipelineRef:
@@ -45,7 +45,7 @@ apiVersion: triggers.tekton.dev/v1beta1
 kind: TriggerBinding
 metadata:
   name: bookstore-trigger-binding
-  namespace: sgaikwad
+  namespace: bookstore
 spec:
   params:
   - name: git-revision
@@ -57,7 +57,7 @@ apiVersion: triggers.tekton.dev/v1beta1
 kind: EventListener
 metadata:
   name: bookstore-event-listener
-  namespace: sgaikwad
+  namespace: bookstore
 spec:
   serviceAccountName: pipeline-service-account
   triggers:
@@ -82,7 +82,7 @@ apiVersion: route.openshift.io/v1
 kind: Route
 metadata:
   name: bookstore-webhook-route
-  namespace: sgaikwad
+  namespace: bookstore
 spec:
   to:
     kind: Service
