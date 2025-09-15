@@ -2,7 +2,7 @@ apiVersion: tekton.dev/v1
 kind: Task
 metadata:
   name: update-gitops-repo
-  namespace: sgaikwad
+  namespace: bookstore
 spec:
   description: Updates the GitOps repository with new image tag
   params:
