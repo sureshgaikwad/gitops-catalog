@@ -2,7 +2,7 @@ apiVersion: tekton.dev/v1
 kind: Pipeline
 metadata:
   name: bookstore-ci-pipeline
-  namespace: sgaikwad
+  namespace: bookstore
 spec:
   params:
   - name: git-url
