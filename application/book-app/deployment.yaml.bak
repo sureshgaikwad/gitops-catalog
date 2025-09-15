@@ -122,7 +122,7 @@ metadata:
     description: "Bookstore Application Route with HTTPS"
     haproxy.router.openshift.io/timeout: "60s"
 spec:
-  host: bookstore-app-sgaikwad.apps.j2o1za12.centralindia.aroapp.io
+  host: bookstore-app-sgaikwad.apps.cluster.example.com
   to:
     kind: Service
     name: bookstore-app
