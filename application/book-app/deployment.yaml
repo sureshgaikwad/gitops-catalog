@@ -26,7 +26,7 @@ spec:
     spec:
       containers:
       - name: bookstore-app
-        image: quay.io/sureshgaikwad/app:e5257848122aac84eb54d46ee8fe535cc4882234
+        image: quay.io/sureshgaikwad/app:c741b6ea2c6a3c499727bebd890e960ef276c35d
         imagePullPolicy: Always
         ports:
         - containerPort: 8080
