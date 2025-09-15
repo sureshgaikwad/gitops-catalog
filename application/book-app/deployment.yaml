@@ -26,7 +26,7 @@ spec:
     spec:
       containers:
       - name: bookstore-app
-        image: image-registry.openshift-image-registry.svc:5000/sgaikwad/bookstore-app:latest
+        image: quay.io/sureshgaikwad/app:e5257848122aac84eb54d46ee8fe535cc4882234
         imagePullPolicy: Always
         ports:
         - containerPort: 8080
