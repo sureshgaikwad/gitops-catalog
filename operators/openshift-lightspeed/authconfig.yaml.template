@@ -1,0 +1,30 @@
+apiVersion: authorino.kuadrant.io/v1beta3
+kind: AuthConfig
+metadata:
+  name: vllm-mistral-protection
+  namespace: models
+  annotations:
+    argocd.argoproj.io/sync-wave: "2"
+spec:
+  hosts:
+  - "vllm-mistral-7b.models.svc.cluster.local"
+  authentication:
+    "api-key":
+      apiKey:
+        selector:
+          matchLabels:
+            app: vllm-auth
+        allNamespaces: true
+      credentials:
+        authorizationHeader:
+          prefix: "Bearer "
+  authorization:
+    "allow-all":
+      opa:
+        rego: |
+          allow := true
+  response:
+    success:
+      headers:
+        "x-auth-service":
+          value: "authorino"

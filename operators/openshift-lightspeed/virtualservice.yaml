@@ -1,0 +1,19 @@
+apiVersion: networking.istio.io/v1beta1
+kind: VirtualService
+metadata:
+  name: vllm-mistral-auth
+  namespace: models
+  annotations:
+    argocd.argoproj.io/sync-wave: "2"
+spec:
+  hosts:
+  - vllm-mistral-7b.models.svc.cluster.local
+  http:
+  - match:
+    - uri:
+        prefix: /v1/
+    route:
+    - destination:
+        host: vllm-mistral-7b.models.svc.cluster.local
+        port:
+          number: 8000

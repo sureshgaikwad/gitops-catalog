@@ -16,6 +16,13 @@ spec:
           name: rhoai-api-keys
         models:
           - name: mistral-small-24b-instruct-quantized
+            url: "{{DYNAMIC_MODEL_URL}}"
   ols:
     defaultProvider: red_hat_openshift_ai
     defaultModel: mistral-small-24b-instruct-quantized
+    conversationCache:
+      type: memory
+      memory:
+        maxEntries: 1000
+    logging:
+      level: INFO
