@@ -1,0 +1,26 @@
+apiVersion: security.istio.io/v1beta1
+kind: AuthorizationPolicy
+metadata:
+  name: vllm-require-auth
+  namespace: models
+  annotations:
+    argocd.argoproj.io/sync-wave: "2"
+  labels:
+    app: vllm-mistral-7b
+    component: security
+spec:
+  selector:
+    matchLabels:
+      app: vllm-mistral-7b
+  rules:
+  - to:
+    - operation:
+        methods: ["GET", "POST", "OPTIONS"]
+        paths: ["/v1/*"]
+    when:
+    - key: custom[x-auth-service]
+      values: ["authorino"]
+  - to:
+    - operation:
+        methods: ["GET"]
+        paths: ["/health", "/metrics"]
