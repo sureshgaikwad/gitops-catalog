@@ -8,8 +8,7 @@ resources:
   - namespace.yaml
   - operatorgroup.yaml
   - subscription.yaml
-  - secret.yml
-  - olsconfig.yaml.template
+  - olsconfig.yaml
 
 commonLabels:
   app.kubernetes.io/name: openshift-lightspeed

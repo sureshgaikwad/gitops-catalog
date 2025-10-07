@@ -12,9 +12,6 @@ spec:
       - name: red_hat_openshift_ai
         type: rhoai_vllm
         url: "http://mistral-small-24b-instruct-quantized-predictor.models.svc.cluster.local/v1"
-        credentialsSecretRef:
-          name: rhoai-api-keys
-          key: apitoken
         models:
           - name: mistral-small-24b-instruct-quantized
             url: "http://mistral-small-24b-instruct-quantized-predictor.models.svc.cluster.local/v1"
