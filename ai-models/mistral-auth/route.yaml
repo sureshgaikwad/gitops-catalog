@@ -1,0 +1,12 @@
+apiVersion: route.openshift.io/v1
+kind: Route
+metadata:
+  name: mistral-small-24b-instruct-quantized
+spec:
+  to:
+    kind: Service
+    name: mistral-small-24b-instruct-quantized-predictor
+  port:
+    targetPort: 8080
+  tls:
+    termination: edge
