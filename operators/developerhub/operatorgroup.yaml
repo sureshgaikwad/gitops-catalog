@@ -7,8 +7,8 @@ metadata:
 apiVersion: operators.coreos.com/v1
 kind: OperatorGroup
 metadata:
-  name: developer-hub-operator-group
-  namespace: developer-hub
+  name: demo-project-operator-group
+  namespace: demo-project
 spec:
   targetNamespaces:
-    - developer-hub
+    - demo-project

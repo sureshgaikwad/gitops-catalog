@@ -1,0 +1,12 @@
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: rhbk
+  labels:
+    app.kubernetes.io/name: rhbk
+    app.kubernetes.io/component: namespace
+    app.kubernetes.io/part-of: developer-hub-stack
+  annotations:
+    argocd.argoproj.io/sync-wave: "0"
+

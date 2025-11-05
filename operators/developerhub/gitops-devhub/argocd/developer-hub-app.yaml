@@ -1,0 +1,39 @@
+---
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: developer-hub
+  namespace: openshift-gitops
+  labels:
+    app.kubernetes.io/name: developer-hub
+    app.kubernetes.io/part-of: developer-hub-stack
+  finalizers:
+    - resources-finalizer.argocd.argoproj.io
+spec:
+  project: default
+  source:
+    repoURL: https://github.com/YOUR-ORG/gitops-devhub.git  # UPDATE THIS!
+    targetRevision: main
+    path: base/developer-hub
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: demo-project
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=false
+    retry:
+      limit: 5
+      backoff:
+        duration: 5s
+        factor: 2
+        maxDuration: 3m
+  # Health assessment for Backstage
+  ignoreDifferences:
+    - group: rhdh.redhat.com
+      kind: Backstage
+      jsonPointers:
+        - /status
+

@@ -2,7 +2,7 @@ apiVersion: rhdh.redhat.com/v1alpha2
 kind: Backstage
 metadata:
   name: developer-hub
-  namespace: developer-hub #project-namespace
+  namespace: demo-project #project-namespace
 spec:
   application:
     dynamicPluginsConfigMapName: dynamic-plugins-rhdh
@@ -31,3 +31,5 @@ spec:
             volumes:
               - $patch: replace
                 name: dynamic-plugins-root
+                persistentVolumeClaim:
+                  claimName: dynamic-plugins-root

@@ -1,0 +1,43 @@
+---
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: developer-hub-keycloak
+  namespace: openshift-gitops
+  labels:
+    app.kubernetes.io/name: keycloak
+    app.kubernetes.io/part-of: developer-hub-stack
+  finalizers:
+    - resources-finalizer.argocd.argoproj.io
+spec:
+  project: default
+  source:
+    repoURL: https://github.com/YOUR-ORG/gitops-devhub.git  # UPDATE THIS!
+    targetRevision: main
+    path: base/keycloak
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: rhbk
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=false
+    retry:
+      limit: 5
+      backoff:
+        duration: 5s
+        factor: 2
+        maxDuration: 3m
+  # Health assessment for Keycloak
+  ignoreDifferences:
+    - group: k8s.keycloak.org
+      kind: Keycloak
+      jsonPointers:
+        - /status
+    - group: k8s.keycloak.org
+      kind: KeycloakRealmImport
+      jsonPointers:
+        - /status
+

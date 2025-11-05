@@ -2,7 +2,7 @@ kind: ConfigMap
 apiVersion: v1
 metadata:
   name: dynamic-plugins-rhdh
-  namespace: developer-hub #project-namespace
+  namespace: demo-project #project-namespace
 data:
   dynamic-plugins.yaml: |
     includes:
@@ -14,6 +14,4 @@ data:
         disabled: false
       # enables GitHub actions for the software templates (e.g., publish:github)
       - package: ./dynamic-plugins/dist/backstage-plugin-scaffolder-backend-module-github-dynamic
-        disabled: false
-      - package: './dynamic-plugins/dist/backstage-plugin-catalog-backend-module-github-org'
         disabled: false

@@ -1,0 +1,25 @@
+---
+apiVersion: backstage.io/v1alpha1
+kind: User
+metadata:
+  # The GitHub username of the user trying to log in (lowercase)
+  # IMPORTANT: Replace 'your-github-username' with your actual GitHub username
+  name: sureshgaikwad
+spec:
+  # Optional: can match user's email for sign-in resolvers
+  profile:
+    displayName: Suresh Gaikwad
+    email: sureshgaikwad309@gmail.com
+  memberOf: []
+---
+apiVersion: backstage.io/v1alpha1
+kind: Group
+metadata:
+  name: sgaikwadorg
+  description: sgaikwadorg GitHub Organization
+spec:
+  type: organization
+  profile:
+    displayName: sgaikwadorg
+  children: []
+

@@ -2,10 +2,9 @@ kind: ConfigMap
 apiVersion: v1
 metadata:
   name: app-config-rhdh
-  namespace: developer-hub #project-namespace
+  namespace: demo-project #project-namespace
 data:
   app-config-rhdh.yaml: |
-    signInPage: github
     app:
       title: My Red Hat Developer Hub Instance
       baseUrl: ${baseUrl}  # base url is coming from the 'secrets_rdhd-secret.yaml' config in 'setting-up-developer-hub-through-the-operator'
@@ -24,7 +23,6 @@ data:
             - appId: ${RHDH_GITHUB_APP_ID}
               clientId: ${RHDH_GITHUB_APP_CLIENT_ID}
               clientSecret: ${RHDH_GITHUB_APP_CLIENT_SECRET}
-              callbackUrl: https://backstage-developer-hub-developer-hub.apps.rosa.i6x3z5p5a2r0i4l.7ued.p3.openshiftapps.com/handler
               webhookUrl: none
               webhookSecret: none
               privateKey: ${RHDH_GITHUB_APP_PRIVATE_KEY}
@@ -52,3 +50,15 @@ data:
         # allow guest authentication for now
         guest:
           dangerouslyAllowOutsideDevelopment: true
+        # GitHub OAuth authentication
+        github:
+          development:
+            clientId: ${RHDH_GITHUB_APP_CLIENT_ID}
+            clientSecret: ${RHDH_GITHUB_APP_CLIENT_SECRET}
+            signIn:
+              resolvers:
+                # Allow users to sign in using their GitHub username
+                - resolver: usernameMatchingUserEntityName
+                # Allow users to sign in using their GitHub email
+                - resolver: emailMatchingUserEntityProfileEmail
+                - resolver: emailLocalPartMatchingUserEntityName

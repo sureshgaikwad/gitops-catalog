@@ -1,0 +1,18 @@
+---
+apiVersion: rhdh.redhat.com/v1alpha3
+kind: Backstage
+metadata:
+  name: developer-hub
+  namespace: demo-project
+spec:
+  application:
+    # Increase replicas for production
+    replicas: 2
+  database:
+    # Use external database for production
+    enableLocalDb: false
+    # Uncomment and configure for production:
+    # passwordSecret:
+    #   name: postgres-secret
+    #   key: password
+
