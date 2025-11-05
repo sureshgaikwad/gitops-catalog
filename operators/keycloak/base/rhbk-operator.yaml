@@ -1,15 +1,14 @@
----
 apiVersion: operators.coreos.com/v1alpha1
 kind: Subscription
 metadata:
   name: rhbk-operator
   namespace: rhbk
+  annotations:
+    argocd.argoproj.io/sync-wave: "0"
   labels:
     app.kubernetes.io/name: rhbk-operator
     app.kubernetes.io/component: operator
     app.kubernetes.io/part-of: developer-hub-stack
-  annotations:
-    argocd.argoproj.io/sync-wave: "0"
 spec:
   channel: stable-v24
   installPlanApproval: Automatic
