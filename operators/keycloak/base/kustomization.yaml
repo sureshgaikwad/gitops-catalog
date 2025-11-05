@@ -1,0 +1,20 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+namespace: rhbk
+
+resources:
+  # Namespace
+  - rhbk-namespace.yaml
+  # Operator
+  - rhbk-operator.yaml
+  # Keycloak Instance and Database
+  - keycloak-instance.yaml
+  # Realm Configuration
+  - keycloak-realm.yaml
+  # Client Configuration for Developer Hub
+  - keycloak-client.yaml
+
+commonLabels:
+  app.kubernetes.io/part-of: developer-hub-stack
+  app.kubernetes.io/component: keycloak

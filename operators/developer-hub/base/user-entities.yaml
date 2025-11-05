@@ -1,0 +1,52 @@
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: backstage-user-entities
+  namespace: demo-project
+  labels:
+    app.kubernetes.io/name: developer-hub
+    app.kubernetes.io/component: user-catalog
+    app.kubernetes.io/part-of: developer-hub-stack
+  annotations:
+    argocd.argoproj.io/sync-wave: "3"
+data:
+  user-entities.yaml: |
+    ---
+    # User entities for Developer Hub
+    # The email MUST match the email in Keycloak for authentication to work
+    
+    apiVersion: backstage.io/v1alpha1
+    kind: User
+    metadata:
+      name: test
+    spec:
+      profile:
+        displayName: Test User
+        email: test@gmail.com  # MUST match Keycloak user email
+      memberOf: []
+    
+    ---
+    # Add more users here
+    # apiVersion: backstage.io/v1alpha1
+    # kind: User
+    # metadata:
+    #   name: another-user
+    # spec:
+    #   profile:
+    #     displayName: Another User
+    #     email: another@example.com
+    #   memberOf: []
+    
+    ---
+    # Example group
+    apiVersion: backstage.io/v1alpha1
+    kind: Group
+    metadata:
+      name: developers
+    spec:
+      type: team
+      profile:
+        displayName: Developers
+      children: []
+
