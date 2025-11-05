@@ -1,0 +1,6 @@
+# Generated files - created by Terraform from templates
+keycloak-client.yaml
+
+# Keep the template
+!keycloak-client.yaml.template
+

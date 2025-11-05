@@ -1,0 +1,8 @@
+# Generated files - created by Terraform from templates
+auth-secret.yaml
+app-config.yaml
+
+# Keep the templates
+!auth-secret.yaml.template
+!app-config.yaml.template
+

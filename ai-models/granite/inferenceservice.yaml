@@ -1,0 +1,57 @@
+apiVersion: serving.kserve.io/v1beta1
+kind: InferenceService
+metadata:
+  name: granite-4-0-h-micro
+  annotations:
+    openshift.io/display-name: granite-4-0-h-micro
+    serving.kserve.io/deploymentMode: RawDeployment
+    argocd.argoproj.io/sync-wave: "1"
+  labels:
+    opendatahub.io/dashboard: 'true'
+    modelregistry.opendatahub.io/registered: 'true'
+  namespace: models
+spec:
+  predictor:
+    maxReplicas: 1
+    minReplicas: 1
+    tolerations:
+    - key: nvidia.com/gpu
+      operator: Equal
+      value: "true"
+      effect: NoSchedule
+    containers:
+    - name: kserve-container
+      image: quay.io/sureshgaikwad/ocp-mcp:granite
+      imagePullPolicy: Always
+      ports:
+      - containerPort: 8080
+        protocol: TCP
+        name: http
+      livenessProbe:
+        httpGet:
+          path: /health
+          port: 8080
+        initialDelaySeconds: 30
+        periodSeconds: 10
+        timeoutSeconds: 5
+        failureThreshold: 3
+      readinessProbe:
+        httpGet:
+          path: /health
+          port: 8080
+        initialDelaySeconds: 20
+        periodSeconds: 5
+        timeoutSeconds: 3
+        failureThreshold: 3
+      resources:
+        limits:
+          cpu: '2'                      # this is model specific
+          memory: 8Gi                   # this is model specific
+          nvidia.com/gpu: '1'           # this is accelerator specific
+        requests:                       # same comment for this block
+          cpu: '1'
+          memory: 4Gi
+          nvidia.com/gpu: '1'
+      env:
+      - name: MODEL_PATH
+        value: "/models/granite.gguf"
