@@ -24,7 +24,5 @@ metadata:
   namespace: demo-project
   annotations:
     argocd.argoproj.io/sync-wave: "1"
-spec:
-  targetNamespaces:
-    - demo-project
+spec: {}
 
