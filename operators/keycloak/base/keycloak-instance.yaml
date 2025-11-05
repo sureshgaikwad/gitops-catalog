@@ -4,9 +4,6 @@ kind: Keycloak
 metadata:
   name: sample-kc
   namespace: rhbk
-  annotations:
-    argocd.argoproj.io/sync-wave: "2"
-    argocd.argoproj.io/sync-options: SkipDryRunOnMissingResource=true
   labels:
     app: keycloak
     app.kubernetes.io/name: keycloak
@@ -14,6 +11,7 @@ metadata:
     app.kubernetes.io/part-of: developer-hub-stack
   annotations:
     argocd.argoproj.io/sync-wave: "2"
+    argocd.argoproj.io/sync-options: SkipDryRunOnMissingResource=true
 spec:
   instances: 1
   hostname:
