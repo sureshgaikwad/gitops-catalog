@@ -8,6 +8,7 @@ metadata:
     app: keycloak
   annotations:
     argocd.argoproj.io/sync-wave: "4"
+    argocd.argoproj.io/sync-options: SkipDryRunOnMissingResource=true
 spec:
   keycloakCRName: sample-kc
   realm:

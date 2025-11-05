@@ -6,6 +6,7 @@ metadata:
   namespace: rhbk
   annotations:
     argocd.argoproj.io/sync-wave: "2"
+    argocd.argoproj.io/sync-options: SkipDryRunOnMissingResource=true
   labels:
     app: keycloak
     app.kubernetes.io/name: keycloak
