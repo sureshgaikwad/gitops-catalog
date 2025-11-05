@@ -8,6 +8,7 @@ metadata:
     app: keycloak
   annotations:
     argocd.argoproj.io/sync-wave: "4"
+    argocd.argoproj.io/sync-options: SkipDryRunOnMissingResource=true
 spec:
   keycloakCRName: sample-kc
   realm:
@@ -19,7 +20,7 @@ spec:
         description: "OIDC client for Red Hat Developer Hub authentication"
         enabled: true
         clientAuthenticatorType: client-secret
-        secret: "Zu889CpIBEokBlqDDZuVOs46OQFqGjquNLnV0MRtskE="
+        secret: "LeZVxhr38G6LD5kbhFPDpRJoC2lFp84tb/xRPuol0eE="
         # Protocol settings
         protocol: openid-connect
         publicClient: false
