@@ -4,14 +4,12 @@ kind: Backstage
 metadata:
   name: developer-hub
   namespace: demo-project
-  annotations:
-    argocd.argoproj.io/sync-wave: "2"
   labels:
     app.kubernetes.io/name: developer-hub
     app.kubernetes.io/component: backstage
     app.kubernetes.io/part-of: developer-hub-stack
   annotations:
-    argocd.argoproj.io/sync-wave: "4"
+    argocd.argoproj.io/sync-wave: "2"
 spec:
   application:
     # App configuration from ConfigMap
