@@ -4,6 +4,8 @@ kind: KeycloakRealmImport
 metadata:
   name: myrealm-import
   namespace: rhbk
+  annotations:
+    argocd.argoproj.io/sync-wave: "3"
   labels:
     app: keycloak
   annotations:

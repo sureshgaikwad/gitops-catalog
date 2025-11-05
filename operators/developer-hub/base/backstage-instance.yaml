@@ -4,6 +4,8 @@ kind: Backstage
 metadata:
   name: developer-hub
   namespace: demo-project
+  annotations:
+    argocd.argoproj.io/sync-wave: "2"
   labels:
     app.kubernetes.io/name: developer-hub
     app.kubernetes.io/component: backstage

@@ -9,7 +9,7 @@ metadata:
     app.kubernetes.io/component: operator
     app.kubernetes.io/part-of: developer-hub-stack
   annotations:
-    argocd.argoproj.io/sync-wave: "1"
+    argocd.argoproj.io/sync-wave: "0"
 spec:
   channel: stable-v24
   installPlanApproval: Automatic

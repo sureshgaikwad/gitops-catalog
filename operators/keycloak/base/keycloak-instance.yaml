@@ -4,6 +4,8 @@ kind: Keycloak
 metadata:
   name: sample-kc
   namespace: rhbk
+  annotations:
+    argocd.argoproj.io/sync-wave: "2"
   labels:
     app: keycloak
     app.kubernetes.io/name: keycloak
