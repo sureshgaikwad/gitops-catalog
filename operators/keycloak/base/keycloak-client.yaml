@@ -19,7 +19,7 @@ spec:
         description: "OIDC client for Red Hat Developer Hub authentication"
         enabled: true
         clientAuthenticatorType: client-secret
-        secret: "f2q1hJPk/lGqkRlT3DAAjk/UURtocdQDZm8YDCIIE4w="
+        secret: "V3NjZ/2Yjolb2rgecIbyBU7z7xSzHxZ3P4xrnHQ0fXk="
         # Protocol settings
         protocol: openid-connect
         publicClient: false
