@@ -4,20 +4,10 @@ kind: Kustomization
 namespace: demo-project
 
 resources:
-  # Namespace
   - demo-project-namespace.yaml
-  # Operator
-  - developer-hub-operator.yaml
-  # Secrets and ConfigMaps
   - auth-secret.yaml
   - app-config.yaml
-  - user-entities.yaml
   - dynamic-plugins.yaml
-  # RBAC
+  - user-entities.yaml
   - rbac.yaml
-  # Developer Hub Instance
   - backstage-instance.yaml
-
-commonLabels:
-  app.kubernetes.io/part-of: developer-hub-stack
-  app.kubernetes.io/component: developer-hub
