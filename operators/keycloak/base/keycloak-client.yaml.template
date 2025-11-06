@@ -13,7 +13,7 @@ data:
     #!/bin/bash
     set -e
     
-    KEYCLOAK_URL="https://keycloak-rhbk.apps.{{CLUSTER_DOMAIN}}"
+    KEYCLOAK_URL="https://keycloak-rhbk.{{CLUSTER_DOMAIN}}"
     CLIENT_SECRET="{{OIDC_CLIENT_SECRET}}"
     
     echo "Waiting for Keycloak to be ready..."
@@ -60,10 +60,10 @@ data:
         \"directAccessGrantsEnabled\": false,
         \"secret\": \"$CLIENT_SECRET\",
         \"redirectUris\": [
-          \"https://backstage-developer-hub-demo-project.apps.{{CLUSTER_DOMAIN}}/*\",
-          \"https://backstage-developer-hub-demo-project.apps.{{CLUSTER_DOMAIN}}/api/auth/oidc/handler/frame\"
+          \"https://backstage-developer-hub-demo-project.{{CLUSTER_DOMAIN}}/*\",
+          \"https://backstage-developer-hub-demo-project.{{CLUSTER_DOMAIN}}/api/auth/oidc/handler/frame\"
         ],
-        \"webOrigins\": [\"https://backstage-developer-hub-demo-project.apps.{{CLUSTER_DOMAIN}}\"],
+        \"webOrigins\": [\"https://backstage-developer-hub-demo-project.{{CLUSTER_DOMAIN}}\"],
         \"defaultClientScopes\": [\"openid\", \"email\", \"profile\", \"roles\", \"web-origins\"],
         \"optionalClientScopes\": [\"address\", \"phone\", \"offline_access\"]
       }")
