@@ -1,4 +1,30 @@
 ---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: sample-kc-tls-secret
+  namespace: rhbk
+  annotations:
+    argocd.argoproj.io/sync-wave: "1"
+type: kubernetes.io/tls
+stringData:
+  tls.crt: |
+    -----BEGIN CERTIFICATE-----
+    MIIDazCCAlOgAwIBAgIUXGOBqYq3xwE3gTLKJhvGxqJ6F2MwDQYJKoZIhvcNAQEL
+    BQAwRTELMAkGA1UEBhMCVVMxEzARBgNVBAgMClNvbWUtU3RhdGUxITAfBgNVBAoM
+    GEludGVybmV0IFdpZGdpdHMgUHR5IEx0ZDAeFw0yNTAxMDEwMDAwMDBaFw0yNjAx
+    MDEwMDAwMDBaMEUxCzAJBgNVBAYTAlVTMRMwEQYDVQQIDApTb21lLVN0YXRlMSEw
+    HwYDVQQKDBhJbnRlcm5ldCBXaWRnaXRzIFB0eSBMdGQwggEiMA0GCSqGSIb3DQEB
+    AQUAA4IBDwAwggEKAoIBAQC7h0z+yXdF9C0v5yVGKKfvp5qJ3aXx2k8N9xJYqKJi
+    VH2CvNM0TqGqxVY1oBNqF6VyK9qP3qH5xMY0kC5YvH2xQwJ8M3r7yH5xJY0kVqGq
+    -----END CERTIFICATE-----
+  tls.key: |
+    -----BEGIN PRIVATE KEY-----
+    MIIEvgIBADANBgkqhkiG9w0BAQEFAASCBKgwggSkAgEAAoIBAQC7h0z+yXdF9C0v
+    5yVGKKfvp5qJ3aXx2k8N9xJYqKJiVH2CvNM0TqGqxVY1oBNqF6VyK9qP3qH5xMY0
+    kC5YvH2xQwJ8M3r7yH5xJY0kVqGqxVY1oBNqF6VyK9qP3qH5xMY0kC5YvH2xQwJ8
+    -----END PRIVATE KEY-----
+---
 apiVersion: k8s.keycloak.org/v2alpha1
 kind: Keycloak
 metadata:
@@ -17,12 +43,15 @@ spec:
   hostname:
     strict: false
   http:
-    httpEnabled: true
+    tlsSecret: sample-kc-tls-secret
   ingress:
     enabled: true
+  proxy:
+    headers: xforwarded
   db:
     vendor: postgres
-    host: postgresql-db
+    host: postgres-db
+    port: 5432
     usernameSecret:
       name: keycloak-db-secret
       key: username
@@ -46,59 +75,61 @@ spec:
 apiVersion: v1
 kind: Service
 metadata:
-  name: postgresql-db
+  name: postgres-db
   namespace: rhbk
   labels:
-    app: postgresql
+    app: postgres-db
   annotations:
-    argocd.argoproj.io/sync-wave: "2"
+    argocd.argoproj.io/sync-wave: "1"
 spec:
   ports:
     - port: 5432
       targetPort: 5432
   selector:
-    app: postgresql
+    app: postgres-db
   type: ClusterIP
 ---
 apiVersion: apps/v1
 kind: StatefulSet
 metadata:
-  name: postgresql-db
+  name: postgres-db
   namespace: rhbk
   labels:
-    app: postgresql
+    app: postgres-db
   annotations:
-    argocd.argoproj.io/sync-wave: "2"
+    argocd.argoproj.io/sync-wave: "1"
 spec:
-  serviceName: postgresql-db
+  serviceName: postgres-db
   replicas: 1
   selector:
     matchLabels:
-      app: postgresql
+      app: postgres-db
   template:
     metadata:
       labels:
-        app: postgresql
+        app: postgres-db
     spec:
       containers:
-        - name: postgresql
-          image: registry.redhat.io/rhel9/postgresql-15:latest
+        - name: postgres
+          image: postgres:15
           ports:
             - containerPort: 5432
-              name: postgresql
+              name: postgres
           env:
-            - name: POSTGRESQL_USER
+            - name: POSTGRES_USER
+              value: testuser
+            - name: POSTGRES_PASSWORD
+              value: testpassword
+            - name: POSTGRES_DB
               value: keycloak
-            - name: POSTGRESQL_PASSWORD
-              value: keycloak
-            - name: POSTGRESQL_DATABASE
-              value: keycloak
+            - name: PGDATA
+              value: /data/pgdata
           volumeMounts:
-            - name: postgresql-data
-              mountPath: /var/lib/pgsql/data
+            - name: postgres-data
+              mountPath: /data
   volumeClaimTemplates:
     - metadata:
-        name: postgresql-data
+        name: postgres-data
       spec:
         accessModes: ["ReadWriteOnce"]
         resources:
@@ -111,9 +142,9 @@ metadata:
   name: keycloak-db-secret
   namespace: rhbk
   annotations:
-    argocd.argoproj.io/sync-wave: "2"
+    argocd.argoproj.io/sync-wave: "1"
 type: Opaque
 stringData:
-  username: keycloak
-  password: keycloak
+  username: testuser
+  password: testpassword
 
