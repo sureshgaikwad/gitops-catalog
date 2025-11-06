@@ -1,91 +1,148 @@
 ---
-apiVersion: k8s.keycloak.org/v2alpha1
-kind: KeycloakRealmImport
+apiVersion: v1
+kind: ConfigMap
 metadata:
-  name: myrealm-client-import
+  name: keycloak-client-script
   namespace: rhbk
   labels:
     app: keycloak
   annotations:
     argocd.argoproj.io/sync-wave: "4"
-    argocd.argoproj.io/sync-options: SkipDryRunOnMissingResource=true
-    argocd.argoproj.io/sync-options: Replace=true
+data:
+  create-client.sh: |
+    #!/bin/bash
+    set -e
+    
+    KEYCLOAK_URL="https://keycloak-rhbk.apps.{{CLUSTER_DOMAIN}}"
+    CLIENT_SECRET="{{OIDC_CLIENT_SECRET}}"
+    
+    echo "Waiting for Keycloak to be ready..."
+    sleep 30
+    
+    echo "Getting admin credentials..."
+    ADMIN_PASS=$(oc get secret sample-kc-initial-admin -n rhbk -o jsonpath='{.data.password}' | base64 -d)
+    
+    echo "Getting admin token..."
+    TOKEN=$(curl -k -s -X POST "$KEYCLOAK_URL/realms/master/protocol/openid-connect/token" \
+      -H "Content-Type: application/x-www-form-urlencoded" \
+      -d "username=admin" \
+      -d "password=$ADMIN_PASS" \
+      -d "grant_type=password" \
+      -d "client_id=admin-cli" | jq -r '.access_token')
+    
+    if [ -z "$TOKEN" ] || [ "$TOKEN" = "null" ]; then
+      echo "Failed to get admin token"
+      exit 1
+    fi
+    
+    echo "Checking if client already exists..."
+    CLIENT_EXISTS=$(curl -k -s -X GET "$KEYCLOAK_URL/admin/realms/myrealm/clients" \
+      -H "Authorization: Bearer $TOKEN" | jq -r '.[] | select(.clientId=="myclient") | .clientId')
+    
+    if [ "$CLIENT_EXISTS" = "myclient" ]; then
+      echo "Client 'myclient' already exists, skipping creation"
+      exit 0
+    fi
+    
+    echo "Creating OAuth client 'myclient'..."
+    RESPONSE=$(curl -k -s -w "\n%{http_code}" -X POST "$KEYCLOAK_URL/admin/realms/myrealm/clients" \
+      -H "Authorization: Bearer $TOKEN" \
+      -H "Content-Type: application/json" \
+      -d "{
+        \"clientId\": \"myclient\",
+        \"name\": \"Developer Hub Client\",
+        \"description\": \"OIDC client for Red Hat Developer Hub authentication\",
+        \"enabled\": true,
+        \"protocol\": \"openid-connect\",
+        \"publicClient\": false,
+        \"standardFlowEnabled\": true,
+        \"implicitFlowEnabled\": false,
+        \"directAccessGrantsEnabled\": false,
+        \"secret\": \"$CLIENT_SECRET\",
+        \"redirectUris\": [
+          \"https://backstage-developer-hub-demo-project.apps.{{CLUSTER_DOMAIN}}/*\",
+          \"https://backstage-developer-hub-demo-project.apps.{{CLUSTER_DOMAIN}}/api/auth/oidc/handler/frame\"
+        ],
+        \"webOrigins\": [\"https://backstage-developer-hub-demo-project.apps.{{CLUSTER_DOMAIN}}\"],
+        \"defaultClientScopes\": [\"openid\", \"email\", \"profile\", \"roles\", \"web-origins\"],
+        \"optionalClientScopes\": [\"address\", \"phone\", \"offline_access\"]
+      }")
+    
+    HTTP_CODE=$(echo "$RESPONSE" | tail -n1)
+    if [ "$HTTP_CODE" = "201" ]; then
+      echo "Client created successfully!"
+    else
+      echo "Failed to create client. HTTP code: $HTTP_CODE"
+      echo "Response: $(echo "$RESPONSE" | head -n-1)"
+      exit 1
+    fi
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: keycloak-client-sa
+  namespace: rhbk
+  annotations:
+    argocd.argoproj.io/sync-wave: "3"
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: keycloak-client-role
+  namespace: rhbk
+  annotations:
+    argocd.argoproj.io/sync-wave: "3"
+rules:
+  - apiGroups: [""]
+    resources: ["secrets"]
+    verbs: ["get", "list"]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: keycloak-client-rolebinding
+  namespace: rhbk
+  annotations:
+    argocd.argoproj.io/sync-wave: "3"
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: keycloak-client-role
+subjects:
+  - kind: ServiceAccount
+    name: keycloak-client-sa
+    namespace: rhbk
+---
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: keycloak-client-setup
+  namespace: rhbk
+  labels:
+    app: keycloak
+  annotations:
+    argocd.argoproj.io/sync-wave: "5"
+    argocd.argoproj.io/hook: Sync
+    argocd.argoproj.io/hook-delete-policy: BeforeHookCreation
 spec:
-  keycloakCRName: sample-kc
-  realm:
-    id: myrealm
-    realm: myrealm
-    clients:
-      - clientId: myclient
-        name: "Developer Hub Client"
-        description: "OIDC client for Red Hat Developer Hub authentication"
-        enabled: true
-        clientAuthenticatorType: client-secret
-        secret: "{{OIDC_CLIENT_SECRET}}"
-        # Protocol settings
-        protocol: openid-connect
-        publicClient: false
-        bearerOnly: false
-        standardFlowEnabled: true
-        implicitFlowEnabled: false
-        directAccessGrantsEnabled: false
-        serviceAccountsEnabled: false
-        # OAuth settings
-        consentRequired: false
-        fullScopeAllowed: true
-        # URLs - Dynamically generated based on cluster domain
-        rootUrl: "https://backstage-developer-hub-demo-project.{{CLUSTER_DOMAIN}}"
-        baseUrl: "https://backstage-developer-hub-demo-project.{{CLUSTER_DOMAIN}}"
-        redirectUris:
-          - "https://backstage-developer-hub-demo-project.{{CLUSTER_DOMAIN}}/api/auth/oidc/handler/frame"
-          - "https://backstage-developer-hub-demo-project.{{CLUSTER_DOMAIN}}/api/auth/oidc/handler/frame/*"
-          - "https://backstage-developer-hub-demo-project.{{CLUSTER_DOMAIN}}/*"
-        webOrigins:
-          - "https://backstage-developer-hub-demo-project.{{CLUSTER_DOMAIN}}"
-          - "*"
-        # Default client scopes
-        defaultClientScopes:
-          - "openid"
-          - "email"
-          - "profile"
-          - "roles"
-          - "web-origins"
-        optionalClientScopes:
-          - "address"
-          - "phone"
-          - "offline_access"
-        # Protocol mappers for additional claims
-        protocolMappers:
-          - name: "email"
-            protocol: "openid-connect"
-            protocolMapper: "oidc-usermodel-property-mapper"
-            consentRequired: false
-            config:
-              userinfo.token.claim: "true"
-              user.attribute: "email"
-              id.token.claim: "true"
-              access.token.claim: "true"
-              claim.name: "email"
-              jsonType.label: "String"
-          - name: "preferred_username"
-            protocol: "openid-connect"
-            protocolMapper: "oidc-usermodel-property-mapper"
-            consentRequired: false
-            config:
-              userinfo.token.claim: "true"
-              user.attribute: "username"
-              id.token.claim: "true"
-              access.token.claim: "true"
-              claim.name: "preferred_username"
-              jsonType.label: "String"
-          - name: "groups"
-            protocol: "openid-connect"
-            protocolMapper: "oidc-group-membership-mapper"
-            consentRequired: false
-            config:
-              full.path: "false"
-              id.token.claim: "true"
-              access.token.claim: "true"
-              claim.name: "groups"
-              userinfo.token.claim: "true"
-
+  ttlSecondsAfterFinished: 300
+  backoffLimit: 3
+  template:
+    metadata:
+      labels:
+        app: keycloak-client-setup
+    spec:
+      restartPolicy: OnFailure
+      serviceAccountName: keycloak-client-sa
+      containers:
+        - name: create-client
+          image: image-registry.openshift-image-registry.svc:5000/openshift/cli:latest
+          command: ["/bin/bash", "/scripts/create-client.sh"]
+          volumeMounts:
+            - name: script
+              mountPath: /scripts
+      volumes:
+        - name: script
+          configMap:
+            name: keycloak-client-script
+            defaultMode: 0755
