@@ -14,7 +14,7 @@ data:
     set -e
     
     KEYCLOAK_URL="https://keycloak-rhbk.apps.apps.rosa.sgaikwad.nepj.p3.openshiftapps.com"
-    CLIENT_SECRET="6qNTyZnS74Pr9SqQHPQmfs/2sTyji1vKrzNNz1zWiN8="
+    CLIENT_SECRET="nss3fo3i5D1Xq+z20mlq7H+SRrY6b0mQJdOATd5tuTE="
     
     echo "Waiting for Keycloak to be ready..."
     sleep 30
