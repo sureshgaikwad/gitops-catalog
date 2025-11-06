@@ -33,7 +33,7 @@ spec:
         emailVerified: true
         credentials:
           - type: "password"
-            value: "changeme"  # CHANGE THIS!
+            value: "redhat"
             temporary: false
     # Client will be defined separately for better management
 
