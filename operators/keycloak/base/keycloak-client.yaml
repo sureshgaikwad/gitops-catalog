@@ -13,8 +13,8 @@ data:
     #!/bin/bash
     set -e
     
-    KEYCLOAK_URL="https://keycloak-rhbk.apps.apps.sgaikwad.nepj.p3.openshiftapps.com:443"
-    CLIENT_SECRET="gT4ENO6Ekk8DoN984C6T8+2TrZBAW0ppHjWZjLGgSho="
+    KEYCLOAK_URL="https://keycloak-rhbk.apps.sgaikwad.nepj.p3.openshiftapps.com:443"
+    CLIENT_SECRET="k9CDy0Vn6tVQiNjTFcN4BZskdA6PSdw+0sQAikw1ODs="
     
     echo "Waiting for Keycloak to be ready..."
     sleep 30
@@ -60,10 +60,10 @@ data:
         \"directAccessGrantsEnabled\": false,
         \"secret\": \"$CLIENT_SECRET\",
         \"redirectUris\": [
-          \"https://backstage-developer-hub-demo-project.apps.apps.sgaikwad.nepj.p3.openshiftapps.com:443/*\",
-          \"https://backstage-developer-hub-demo-project.apps.apps.sgaikwad.nepj.p3.openshiftapps.com:443/api/auth/oidc/handler/frame\"
+          \"https://backstage-developer-hub-demo-project.apps.sgaikwad.nepj.p3.openshiftapps.com:443/*\",
+          \"https://backstage-developer-hub-demo-project.apps.sgaikwad.nepj.p3.openshiftapps.com:443/api/auth/oidc/handler/frame\"
         ],
-        \"webOrigins\": [\"https://backstage-developer-hub-demo-project.apps.apps.sgaikwad.nepj.p3.openshiftapps.com:443\"],
+        \"webOrigins\": [\"https://backstage-developer-hub-demo-project.apps.sgaikwad.nepj.p3.openshiftapps.com:443\"],
         \"defaultClientScopes\": [\"openid\", \"email\", \"profile\", \"roles\", \"web-origins\"],
         \"optionalClientScopes\": [\"address\", \"phone\", \"offline_access\"]
       }")
