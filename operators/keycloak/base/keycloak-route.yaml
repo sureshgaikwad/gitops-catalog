@@ -1,0 +1,25 @@
+---
+apiVersion: route.openshift.io/v1
+kind: Route
+metadata:
+  name: keycloak
+  namespace: rhbk
+  labels:
+    app: keycloak
+    app.kubernetes.io/name: keycloak
+    app.kubernetes.io/component: keycloak-server
+    app.kubernetes.io/part-of: developer-hub-stack
+  annotations:
+    argocd.argoproj.io/sync-wave: "3"
+spec:
+  port:
+    targetPort: https
+  tls:
+    termination: edge
+    insecureEdgeTerminationPolicy: Redirect
+  to:
+    kind: Service
+    name: sample-kc-service
+    weight: 100
+  wildcardPolicy: None
+
