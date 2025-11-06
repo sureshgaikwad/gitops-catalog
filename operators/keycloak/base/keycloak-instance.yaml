@@ -87,11 +87,11 @@ spec:
             - containerPort: 5432
               name: postgresql
           env:
-            - name: POSTGRES_USER
+            - name: POSTGRESQL_USER
               value: keycloak
-            - name: POSTGRES_PASSWORD
+            - name: POSTGRESQL_PASSWORD
               value: keycloak
-            - name: POSTGRES_DB
+            - name: POSTGRESQL_DATABASE
               value: keycloak
           volumeMounts:
             - name: postgresql-data
