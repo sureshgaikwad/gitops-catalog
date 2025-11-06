@@ -30,7 +30,7 @@ spec:
       configMaps:
         - name: backstage-user-entities
           key: user-entities.yaml
-    # Number of replicas
+    # Number of replicas (keep at 1 to avoid migration lock issues)
     replicas: 1
     # Enable route
     route:

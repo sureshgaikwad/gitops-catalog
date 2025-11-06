@@ -38,7 +38,7 @@ data:
       providers:
         oidc:
           production:
-            metadataUrl: https://sample-kc-service-rhbk.{{CLUSTER_DOMAIN}}/realms/myrealm/.well-known/openid-configuration
+            metadataUrl: https://keycloak-rhbk.{{CLUSTER_DOMAIN}}/realms/myrealm/.well-known/openid-configuration
             clientId: ${AUTH_OIDC_CLIENT_ID}
             clientSecret: ${AUTH_OIDC_CLIENT_SECRET}
             prompt: auto
