@@ -15,13 +15,13 @@ data:
     includes:
       - dynamic-plugins.default.yaml
     plugins:
-      # ArgoCD Plugin - Backend
+      # ArgoCD Plugin - Backend (disabled until integrity hash is configured)
       - package: '@roadiehq/backstage-plugin-argo-cd-backend-dynamic@2.13.0'
-        disabled: false
+        disabled: true
       
-      # ArgoCD Plugin - Frontend
+      # ArgoCD Plugin - Frontend (disabled until integrity hash is configured)
       - package: '@roadiehq/backstage-plugin-argo-cd@2.10.2'
-        disabled: false
+        disabled: true
         pluginConfig:
           dynamicPlugins:
             frontend:
@@ -36,9 +36,9 @@ data:
                       icon: argocdIcon
                       text: ArgoCD
       
-      # Tekton Plugin
+      # Tekton Plugin (disabled until properly configured)
       - package: './dynamic-plugins/dist/janus-idp-backstage-plugin-tekton'
-        disabled: false
+        disabled: true
         pluginConfig:
           dynamicPlugins:
             frontend:
