@@ -10,6 +10,8 @@ resources:
   - rhbk-operator.yaml
   # Keycloak Instance and Database
   - keycloak-instance.yaml
+  # Keycloak Route
+  - keycloak-route.yaml
   # Realm Configuration
   - keycloak-realm.yaml
   # Client Configuration for Developer Hub
