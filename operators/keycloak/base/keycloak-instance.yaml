@@ -1,30 +1,4 @@
 ---
-apiVersion: v1
-kind: Secret
-metadata:
-  name: sample-kc-tls-secret
-  namespace: rhbk
-  annotations:
-    argocd.argoproj.io/sync-wave: "1"
-type: kubernetes.io/tls
-stringData:
-  tls.crt: |
-    -----BEGIN CERTIFICATE-----
-    MIIDazCCAlOgAwIBAgIUXGOBqYq3xwE3gTLKJhvGxqJ6F2MwDQYJKoZIhvcNAQEL
-    BQAwRTELMAkGA1UEBhMCVVMxEzARBgNVBAgMClNvbWUtU3RhdGUxITAfBgNVBAoM
-    GEludGVybmV0IFdpZGdpdHMgUHR5IEx0ZDAeFw0yNTAxMDEwMDAwMDBaFw0yNjAx
-    MDEwMDAwMDBaMEUxCzAJBgNVBAYTAlVTMRMwEQYDVQQIDApTb21lLVN0YXRlMSEw
-    HwYDVQQKDBhJbnRlcm5ldCBXaWRnaXRzIFB0eSBMdGQwggEiMA0GCSqGSIb3DQEB
-    AQUAA4IBDwAwggEKAoIBAQC7h0z+yXdF9C0v5yVGKKfvp5qJ3aXx2k8N9xJYqKJi
-    VH2CvNM0TqGqxVY1oBNqF6VyK9qP3qH5xMY0kC5YvH2xQwJ8M3r7yH5xJY0kVqGq
-    -----END CERTIFICATE-----
-  tls.key: |
-    -----BEGIN PRIVATE KEY-----
-    MIIEvgIBADANBgkqhkiG9w0BAQEFAASCBKgwggSkAgEAAoIBAQC7h0z+yXdF9C0v
-    5yVGKKfvp5qJ3aXx2k8N9xJYqKJiVH2CvNM0TqGqxVY1oBNqF6VyK9qP3qH5xMY0
-    kC5YvH2xQwJ8M3r7yH5xJY0kVqGqxVY1oBNqF6VyK9qP3qH5xMY0kC5YvH2xQwJ8
-    -----END PRIVATE KEY-----
----
 apiVersion: k8s.keycloak.org/v2alpha1
 kind: Keycloak
 metadata:
@@ -43,7 +17,7 @@ spec:
   hostname:
     strict: false
   http:
-    tlsSecret: sample-kc-tls-secret
+    httpEnabled: true
   ingress:
     enabled: true
   proxy:
