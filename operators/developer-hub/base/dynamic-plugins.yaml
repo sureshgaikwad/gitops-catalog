@@ -16,11 +16,11 @@ data:
       - dynamic-plugins.default.yaml
     plugins:
       # ArgoCD Plugin - Backend
-      - package: './dynamic-plugins/dist/roadiehq-backstage-plugin-argo-cd-backend-dynamic'
+      - package: '@roadiehq/backstage-plugin-argo-cd-backend-dynamic@2.13.0'
         disabled: false
       
       # ArgoCD Plugin - Frontend
-      - package: './dynamic-plugins/dist/roadiehq-backstage-plugin-argo-cd'
+      - package: '@roadiehq/backstage-plugin-argo-cd@2.10.2'
         disabled: false
         pluginConfig:
           dynamicPlugins:
