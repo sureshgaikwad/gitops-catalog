@@ -15,7 +15,6 @@ resources:
   # Realm Configuration
   - keycloak-realm.yaml
   # Client Configuration for Developer Hub
-  - keycloak-client.yaml
 
 commonLabels:
   app.kubernetes.io/part-of: developer-hub-stack
