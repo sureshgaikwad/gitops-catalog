@@ -18,7 +18,6 @@ spec:
     strict: false
   http:
     httpEnabled: true
-    tlsSecret: sample-kc-tls-secret
   ingress:
     enabled: true
   db:
