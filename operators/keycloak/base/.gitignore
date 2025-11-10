@@ -4,3 +4,4 @@ keycloak-client.yaml
 # Keep the template
 !keycloak-client.yaml.template
 
+
