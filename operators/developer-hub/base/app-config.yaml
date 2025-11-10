@@ -10,6 +10,7 @@ metadata:
     app.kubernetes.io/part-of: developer-hub-stack
   annotations:
     argocd.argoproj.io/sync-wave: "3"
+    argocd.argoproj.io/sync-options: SkipDryRunOnMissingResource=true
 data:
   app-config.yaml: |
     app:
