@@ -5,6 +5,7 @@ metadata:
     openshift.io/display-name: mistral-small-3-1-24b-instruct-2503-quantized-w4a16 # OPTIONAL CHANGE
     serving.kserve.io/deploymentMode: RawDeployment
     argocd.argoproj.io/sync-wave: "1"
+    nvidia.com/use-cdi: "false"  # Disable CDI mode - use legacy GPU access
 #    security.opendatahub.io/enable-auth: "true"  # Critical for token auth
 #    serving.knative.openshift.io/enablePassthrough: "true"  # Critical for auth
 #    sidecar.istio.io/inject: "true"  # For service mesh
@@ -19,6 +20,8 @@ spec:
 #    automountServiceAccountToken: false 
     maxReplicas: 1
     minReplicas: 1
+    annotations:
+      nvidia.com/use-cdi: "false"  # Disable CDI mode - use legacy GPU access
     model:
       modelFormat:
         name: vLLM
