@@ -13,7 +13,6 @@ spec:
  annotations:
    prometheus.io/port: '8080'
    prometheus.io/path: '/metrics'
-   nvidia.com/use-cdi: "false"  # Disable CDI mode - use legacy GPU access
  multiModel: false
  supportedModelFormats:
    - autoSelect: true
@@ -35,11 +34,6 @@ spec:
      env:
        - name: HF_HOME
          value: /tmp/hf_home
-       - name: NVIDIA_DISABLE_CDI
-         value: "true"  # Disable CDI mode - use legacy GPU access
      ports:
        - containerPort: 8080
          protocol: TCP
-     # Disable CDI mode - use legacy GPU access (required when CDI is not configured)
-     # This annotation tells the container runtime to use legacy mode instead of CDI hooks
-     # Note: This needs to be set at the container level, not just pod level
