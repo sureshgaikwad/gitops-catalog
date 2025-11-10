@@ -1,14 +1,16 @@
-apiVersion: operators.coreos.com/v1
-kind: OperatorGroup
-metadata:
-  name: developer-hub-operator-group
-  namespace: rhdh-operator
 ---
 apiVersion: operators.coreos.com/v1
 kind: OperatorGroup
 metadata:
   name: developer-hub-operator-group
   namespace: demo-project
+  labels:
+    app.kubernetes.io/name: developer-hub
+    app.kubernetes.io/component: operator-group
+    app.kubernetes.io/part-of: developer-hub-stack
+  annotations:
+    argocd.argoproj.io/sync-wave: "0"
+    argocd.argoproj.io/sync-options: SkipDryRunOnMissingResource=true
 spec:
   targetNamespaces:
     - demo-project

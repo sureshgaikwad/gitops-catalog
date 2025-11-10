@@ -4,11 +4,19 @@ kind: Kustomization
 namespace: demo-project
 
 resources:
+  # Operator installation (must be first)
+  - rhdh-operator-clusterwide.yaml  # Subscription in openshift-operators namespace
+  - operatorgroup.yaml               # OperatorGroup for demo-project namespace
+  # Namespace
   - demo-project-namespace.yaml
+  # Storage
   - pvc-dynamic-plugins.yaml
+  # Configuration
   - auth-secret.yaml
   - app-config.yaml
   - dynamic-plugins.yaml
   - user-entities.yaml
+  # RBAC
   - rbac.yaml
+  # Application instance
   - backstage-instance.yaml
