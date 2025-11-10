@@ -16,6 +16,21 @@ data:
     app:
       title: Red Hat Developer Hub
       baseUrl: https://backstage-developer-hub-demo-project.apps.rosa.sgaikwad.p41z.p3.openshiftapps.com
+      # Optional: Custom branding (uncomment and configure as needed)
+      # branding:
+      #   fullLogo: data:image/jpeg;base64,<BASE64_ENCODED_IMAGE>
+      #   fullLogoWidth: "110px"
+      #   theme:
+      #     light:
+      #       primaryColor: "#444444"
+      #       headerColor1: "#ffffff"
+      #       headerColor2: "#555555"
+      #       navigationIndicatorColor: "#444444"
+      #     dark:
+      #       primaryColor: "#444444"
+      #       headerColor1: "#ffffff"
+      #       headerColor2: "#555555"
+      #       navigationIndicatorColor: "#444444"
     
     backend:
       baseUrl: https://backstage-developer-hub-demo-project.apps.rosa.sgaikwad.p41z.p3.openshiftapps.com
@@ -30,13 +45,19 @@ data:
           port: ${POSTGRESQL_SERVICE_PORT}
           user: ${POSTGRES_USER}
           password: ${POSTGRES_PASSWORD}
+      # Backend authentication keys
+      auth:
+        keys:
+          - secret: ${AUTH_SESSION_SECRET}
     
+    # Authentication Configuration
     auth:
-      # Disable guest access - only authenticated users
+      # Production environment - requires authentication via Keycloak OIDC
       environment: production
       session:
         secret: ${AUTH_SESSION_SECRET}
       providers:
+        # OIDC Provider (Keycloak) - Primary authentication method
         oidc:
           production:
             metadataUrl: https://keycloak-rhbk.apps.rosa.sgaikwad.p41z.p3.openshiftapps.com/realms/myrealm/.well-known/openid-configuration
@@ -51,25 +72,102 @@ data:
                 # This resolver matches users by email
                 # User entities MUST have matching email addresses
                 - resolver: emailMatchingUserEntityProfileEmail
+        # Optional: GitHub authentication (uncomment and configure if needed)
+        # github:
+        #   development:
+        #     clientId: ${GITHUB_APP_CLIENT_ID}
+        #     clientSecret: ${GITHUB_APP_CLIENT_SECRET}
+        #   production:
+        #     clientId: ${GITHUB_APP_CLIENT_ID}
+        #     clientSecret: ${GITHUB_APP_CLIENT_SECRET}
     
-    # Use OIDC for sign-in page
+    # Use OIDC for sign-in page (Keycloak)
     signInPage: oidc
     
+    # Catalog Configuration
     catalog:
+      # Processing configuration
+      processingInterval: { minutes: 1 }
+      processing:
+        cache:
+          enabled: false # Disable cache for development, enable for production
+      # Lifecycle stages
+      lifecycles:
+        - development
+        - production
+        - staging
+      # Catalog rules
       rules:
-        - allow: [Component, System, API, Resource, Location, User, Group, Template]
+        - allow: [Component, System, API, Resource, Location, User, Group, Template, Domain]
+      # Catalog locations
       locations:
-        # Example catalog location
+        # Example catalog location from Backstage
         - type: url
           target: https://github.com/backstage/backstage/blob/master/packages/catalog-model/examples/all.yaml
+          rules:
+            - allow: [Component, System, API, Resource, Location]
         # User entities from ConfigMap
         - type: file
           target: /opt/app-root/src/user-entities.yaml
-        # Red Hat AI Lab Templates
+          rules:
+            - allow: [User, Group]
+        # Red Hat AI Lab Templates - AI integration
         - type: url
           target: https://github.com/redhat-ai-dev/ai-lab-template/blob/main/all.yaml
           rules:
             - allow: [Template, Group, User]
+        # Optional: Software templates from training exercises (uncomment if needed)
+        # - type: url
+        #   target: https://github.com/maarten-vandeperre/developer-hub-training-exercises/blob/main/software-templates/default-quarkus-application/template.yaml
+        #   rules:
+        #     - allow: [Template]
+      # Catalog providers (optional - uncomment and configure if needed)
+      # providers:
+      #   github:
+      #     # Provider ID can be any camelCase string
+      #     providerId:
+      #       organization: ${GITHUB_ORGANIZATION}
+      #       catalogPath: '/catalog-info.yaml'
+      #       filters:
+      #         branch: 'main'
+      #         repository: '.*'
+      #       schedule:
+      #         frequency: { minutes: 5 }
+      #         timeout: { minutes: 1 }
+      #         initialDelay: { seconds: 15 }
+      #     # Additional provider for main branch scanning
+      #     mainBranchProvider:
+      #       organization: ${GITHUB_ORGANIZATION}
+      #       catalogPath: '/catalog-info.yaml'
+      #       filters:
+      #         branch: 'main'
+      #         repository: '.*'
+      #       schedule:
+      #         frequency: { minutes: 1 }
+      #         timeout: { minutes: 1 }
+      #         initialDelay: { seconds: 15 }
+      #   githubOrg:
+      #     id: githuborg-${GITHUB_ORGANIZATION}
+      #     orgs:
+      #       - ${GITHUB_ORGANIZATION}
+      #     githubUrl: https://github.com
+      #     schedule:
+      #       frequency: { minutes: 1 }
+      #       timeout: { minutes: 1 }
+      #       initialDelay: { seconds: 15 }
+    
+    # Integrations (optional - uncomment and configure if needed)
+    # integrations:
+    #   github:
+    #     - host: github.com
+    #       # token: ${GITHUB_TOKEN}  # Optional: Personal Access Token
+    #       apps:
+    #         - appId: ${GITHUB_APP_ID}
+    #           clientId: ${GITHUB_APP_CLIENT_ID}
+    #           clientSecret: ${GITHUB_APP_CLIENT_SECRET}
+    #           webhookUrl: none
+    #           webhookSecret: none
+    #           privateKey: ${GITHUB_APP_PRIVATE_KEY}
     
     # ArgoCD Plugin Configuration
     argocd:
@@ -92,4 +190,22 @@ data:
               authProvider: 'serviceAccount'
               skipTLSVerify: true
               skipMetricsLookup: true
-
+    
+    # Proxy endpoints for custom integrations (optional)
+    # Configure proxy endpoints for learning paths and quick access
+    # These can be customized based on your needs
+    proxy:
+      endpoints:
+        # Developer Hub customization proxy
+        '/developer-hub':
+          target: https://raw.githubusercontent.com
+          pathRewrite:
+            # Learning paths endpoint (customize path as needed)
+            # '^/api/proxy/developer-hub/learning-path': /maarten-vandeperre/developer-hub-training-exercises/main/customizing-developer-hub/files/data-learning-paths.json
+            # Quick access endpoint (customize path as needed)
+            # '^/api/proxy/developer-hub': /maarten-vandeperre/developer-hub-training-exercises/main/customizing-developer-hub/files/data-quick-access.json
+          changeOrigin: true
+          secure: false
+          # Change to "false" in case of using self-hosted cluster with self-signed certificate
+          # headers:
+          #   <HEADER_KEY>: <HEADER_VALUE> # Optional headers for private repos
