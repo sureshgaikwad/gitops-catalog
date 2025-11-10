@@ -10,3 +10,15 @@ metadata:
   annotations:
     argocd.argoproj.io/sync-wave: "0"
     argocd.argoproj.io/sync-options: SkipDryRunOnMissingResource=true
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: rhdh-operator
+  labels:
+    app.kubernetes.io/name: rhdh-operator
+    app.kubernetes.io/component: namespace
+    app.kubernetes.io/part-of: developer-hub-stack
+  annotations:
+    argocd.argoproj.io/sync-wave: "0"
+    argocd.argoproj.io/sync-options: SkipDryRunOnMissingResource=true
