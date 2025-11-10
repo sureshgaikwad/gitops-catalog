@@ -37,10 +37,10 @@ spec:
       enabled: true
       # Custom host can be specified if needed (commented out to use default)
       # host: backstage-developer-hub-demo-project.{{CLUSTER_DOMAIN}}
-      tls:
-        enabled: true
-        termination: edge
-        insecureEdgeTerminationPolicy: Redirect
+   #   tls:
+   #     enabled: true
+   #     termination: edge
+   #     insecureEdgeTerminationPolicy: Redirect
   # Database configuration
   database:
     # Use local PostgreSQL database
@@ -51,10 +51,6 @@ spec:
     #   name: postgres-secret
     #   key: password
   # Extra environment variables
-  extraEnvs:
-    envs:
-      - name: LOG_LEVEL
-        value: INFO # Change to DEBUG for more detailed logs
       # Optional: Disable TLS verification (e.g., when working with self-signed certificates)
       # Uncomment if needed for development with self-signed certs
       # - name: NODE_TLS_REJECT_UNAUTHORIZED
