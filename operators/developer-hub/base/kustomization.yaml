@@ -5,6 +5,7 @@ namespace: demo-project
 
 resources:
   - demo-project-namespace.yaml
+  - pvc-dynamic-plugins.yaml
   - auth-secret.yaml
   - app-config.yaml
   - dynamic-plugins.yaml

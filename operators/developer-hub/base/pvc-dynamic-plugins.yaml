@@ -1,0 +1,21 @@
+---
+kind: PersistentVolumeClaim
+apiVersion: v1
+metadata:
+  name: dynamic-plugins-root
+  namespace: demo-project
+  labels:
+    app.kubernetes.io/name: developer-hub
+    app.kubernetes.io/component: dynamic-plugins-storage
+    app.kubernetes.io/part-of: developer-hub-stack
+  annotations:
+    argocd.argoproj.io/sync-wave: "1"
+    argocd.argoproj.io/sync-options: SkipDryRunOnMissingResource=true
+    description: Persistent volume for caching dynamic plugin installations to speed up startup
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 5Gi
+

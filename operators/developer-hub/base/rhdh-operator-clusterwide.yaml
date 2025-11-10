@@ -1,16 +1,8 @@
----
 apiVersion: operators.coreos.com/v1alpha1
 kind: Subscription
 metadata:
-  name: rhdh
+  name: developer-hub-operator-subscription
   namespace: openshift-operators
-  labels:
-    app.kubernetes.io/name: rhdh-operator
-    app.kubernetes.io/component: operator
-    app.kubernetes.io/part-of: developer-hub-stack
-  annotations:
-    argocd.argoproj.io/sync-wave: "0"
-    argocd.argoproj.io/sync-options: SkipDryRunOnMissingResource=true
 spec:
   channel: fast
   installPlanApproval: Automatic
