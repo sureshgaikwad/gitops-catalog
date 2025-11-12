@@ -44,42 +44,52 @@ spec:
               continue
             fi
             
-            # Check for actual running pods - try multiple label selectors and name patterns
+            # Check for actual running pods - look for container-toolkit daemonset pod
             READY_FOUND=false
             
-            # Try different label selectors
-            for LABEL_SELECTOR in "app=nvidia-container-toolkit" "app.kubernetes.io/name=nvidia-container-toolkit" "app.kubernetes.io/component=container-toolkit" ""; do
-              if [ -z "$LABEL_SELECTOR" ]; then
-                # Last attempt: check all pods in namespace
-                PODS=$(oc get pods -n nvidia-gpu-operator --field-selector=status.phase=Running -o jsonpath='{.items[*].metadata.name}' 2>/dev/null || echo "")
-              else
-                PODS=$(oc get pods -n nvidia-gpu-operator -l "$LABEL_SELECTOR" --field-selector=status.phase=Running -o jsonpath='{.items[*].metadata.name}' 2>/dev/null || echo "")
-              fi
-              
-              if [ -n "$PODS" ]; then
-                # Check if any pod contains "toolkit" or "container" in name, or just check if any pod is ready
-                for POD_NAME in $PODS; do
+            # Get all running pods in the namespace
+            ALL_PODS=$(oc get pods -n nvidia-gpu-operator --field-selector=status.phase=Running -o jsonpath='{.items[*].metadata.name}' 2>/dev/null || echo "")
+            
+            if [ -n "$ALL_PODS" ]; then
+              # Look for container-toolkit daemonset pod (the one we care about)
+              for POD_NAME in $ALL_PODS; do
+                if echo "$POD_NAME" | grep -qi "container-toolkit"; then
                   # Check if this pod is ready
                   POD_READY=$(oc get pod -n nvidia-gpu-operator $POD_NAME -o jsonpath='{.status.containerStatuses[0].ready}' 2>/dev/null || echo "false")
                   if [ "$POD_READY" = "true" ]; then
-                    echo "   ✓ GPU Operator pod $POD_NAME is running and ready"
+                    echo "   ✓ GPU Operator container-toolkit pod $POD_NAME is running and ready"
                     READY_FOUND=true
-                    break 2
+                    break
                   fi
-                done
-                
-                # If we found pods but none are ready, check if any pod name contains toolkit/container
-                for POD_NAME in $PODS; do
-                  if echo "$POD_NAME" | grep -qiE "(toolkit|container|nvidia)"; then
-                    echo "   GPU Operator pod $POD_NAME is running (assuming ready)"
-                    READY_FOUND=true
-                    break 2
+                fi
+              done
+              
+              # If container-toolkit pod not found but other GPU operator pods exist, assume ready
+              if [ "$READY_FOUND" = "false" ]; then
+                # Check if we have other GPU operator pods (gpu-operator, device-plugin, etc.)
+                for POD_NAME in $ALL_PODS; do
+                  if echo "$POD_NAME" | grep -qiE "(gpu-operator|device-plugin|driver-daemonset)"; then
+                    POD_READY=$(oc get pod -n nvidia-gpu-operator $POD_NAME -o jsonpath='{.status.containerStatuses[0].ready}' 2>/dev/null || echo "false")
+                    if [ "$POD_READY" = "true" ]; then
+                      echo "   ✓ GPU Operator pod $POD_NAME is running and ready, assuming container-toolkit is ready too"
+                      READY_FOUND=true
+                      break
+                    fi
                   fi
                 done
               fi
-            done
+              
+              # If still not found, just check if any pod is ready (namespace has pods = operator is running)
+              if [ "$READY_FOUND" = "false" ] && [ -n "$ALL_PODS" ]; then
+                READY_COUNT=$(oc get pods -n nvidia-gpu-operator --field-selector=status.phase=Running -o jsonpath='{range .items[*]}{.status.containerStatuses[0].ready}{"\n"}{end}' 2>/dev/null | grep -c "true" || echo "0")
+                if [ "$READY_COUNT" -gt 0 ]; then
+                  echo "   ✓ Found $READY_COUNT ready pod(s) in nvidia-gpu-operator namespace, GPU operator appears ready"
+                  READY_FOUND=true
+                fi
+              fi
+            fi
             
-            # If no pods found with labels, check for CDI spec files directly (most reliable)
+            # Final check: look for CDI spec files directly (most reliable indicator)
             if [ "$READY_FOUND" = "false" ]; then
               GPU_NODES_CHECK=$(oc get nodes -l nvidia.com/gpu.present=true -o jsonpath='{.items[*].metadata.name}' 2>/dev/null || echo "")
               if [ -n "$GPU_NODES_CHECK" ]; then
