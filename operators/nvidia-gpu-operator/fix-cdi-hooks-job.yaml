@@ -75,62 +75,62 @@ spec:
           for NODE in $GPU_NODES; do
             echo "4. Fixing CDI spec on node: $NODE"
             
-            oc debug node/$NODE -- chroot /host /bin/bash -c "
+            oc debug node/$NODE -- chroot /host /bin/bash -c '
               set -e
-              CDI_SPEC_FILE='/var/run/cdi/k8s.device-plugin.nvidia.com-gpu.json'
+              CDI_SPEC_FILE="/var/run/cdi/k8s.device-plugin.nvidia.com-gpu.json"
               
-              if [ ! -f \"\$CDI_SPEC_FILE\" ]; then
-                echo '   ⚠ CDI spec file not found, skipping...'
+              if [ ! -f "$CDI_SPEC_FILE" ]; then
+                echo "   ⚠ CDI spec file not found, skipping..."
                 exit 0
               fi
               
               # Backup the original file
-              if [ ! -f \"\${CDI_SPEC_FILE}.backup\" ]; then
-                cp \"\$CDI_SPEC_FILE\" \"\${CDI_SPEC_FILE}.backup\"
-                echo '   ✓ Created backup'
+              if [ ! -f "${CDI_SPEC_FILE}.backup" ]; then
+                cp "$CDI_SPEC_FILE" "${CDI_SPEC_FILE}.backup"
+                echo "   ✓ Created backup"
               fi
               
               # Fix using Python (available on OpenShift nodes)
-              python3 << 'PYEOF'
+              python3 << "PYSCRIPT"
 import json
 import sys
 
-cdi_file = '/var/run/cdi/k8s.device-plugin.nvidia.com-gpu.json'
+cdi_file = "/var/run/cdi/k8s.device-plugin.nvidia.com-gpu.json"
 
 try:
-    with open(cdi_file, 'r') as f:
+    with open(cdi_file, "r") as f:
         data = json.load(f)
     
     # Remove all hooks
-    if 'containerEdits' in data:
-        if 'hooks' in data['containerEdits']:
-            print(f'   Removing {len(data[\"containerEdits\"][\"hooks\"])} hooks...')
-            data['containerEdits']['hooks'] = []
+    if "containerEdits" in data:
+        if "hooks" in data["containerEdits"]:
+            print(f"   Removing {len(data[\"containerEdits\"][\"hooks\"])} hooks...")
+            data["containerEdits"]["hooks"] = []
         
         # Set environment variables
-        data['containerEdits']['env'] = [
-            'NVIDIA_CTK_LIBCUDA_DIR=/usr/lib64',
-            'NVIDIA_VISIBLE_DEVICES=all'
+        data["containerEdits"]["env"] = [
+            "NVIDIA_CTK_LIBCUDA_DIR=/usr/lib64",
+            "NVIDIA_VISIBLE_DEVICES=all"
         ]
-        print('   ✓ Set NVIDIA_VISIBLE_DEVICES=all')
+        print("   ✓ Set NVIDIA_VISIBLE_DEVICES=all")
     
     # Write the fixed spec
-    with open(cdi_file, 'w') as f:
+    with open(cdi_file, "w") as f:
         json.dump(data, f, indent=2)
     
-    print('   ✓ CDI spec fixed successfully')
+    print("   ✓ CDI spec fixed successfully")
     
 except FileNotFoundError:
-    print(f'   ⚠ CDI spec file not found')
+    print("   ⚠ CDI spec file not found")
     sys.exit(0)
 except json.JSONDecodeError as e:
-    print(f'   ✗ Error parsing JSON: {e}')
+    print(f"   ✗ Error parsing JSON: {e}")
     sys.exit(1)
 except Exception as e:
-    print(f'   ✗ Error: {e}')
+    print(f"   ✗ Error: {e}")
     sys.exit(1)
-PYEOF
-            " && FIXED_COUNT=$((FIXED_COUNT + 1)) || FAILED_COUNT=$((FAILED_COUNT + 1))
+PYSCRIPT
+            ' && FIXED_COUNT=$((FIXED_COUNT + 1)) || FAILED_COUNT=$((FAILED_COUNT + 1))
             
             echo ""
           done
