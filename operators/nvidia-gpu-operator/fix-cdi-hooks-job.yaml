@@ -1,0 +1,161 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: fix-cdi-hooks
+  namespace: nvidia-gpu-operator
+  annotations:
+    argocd.argoproj.io/sync-wave: "10"
+    argocd.argoproj.io/sync-options: SkipDryRunOnMissingResource=true
+    argocd.argoproj.io/hook: PostSync
+    argocd.argoproj.io/hook-delete-policy: BeforeHookCreation,HookSucceeded
+spec:
+  ttlSecondsAfterFinished: 300
+  backoffLimit: 2
+  template:
+    metadata:
+      labels:
+        app: fix-cdi-hooks
+    spec:
+      serviceAccountName: fix-cdi-hooks
+      restartPolicy: OnFailure
+      containers:
+      - name: fix-cdi
+        image: quay.io/openshift/origin-cli:latest
+        command:
+        - /bin/bash
+        - -c
+        - |
+          set -e
+          echo "============================================================"
+          echo "Fixing CDI Hook Issues on All GPU Nodes"
+          echo "============================================================"
+          echo ""
+          
+          # Wait for GPU operator to be ready
+          echo "1. Waiting for NVIDIA GPU Operator to be ready..."
+          MAX_WAIT=600
+          ELAPSED=0
+          while [ $ELAPSED -lt $MAX_WAIT ]; do
+            if oc get daemonset -n nvidia-gpu-operator nvidia-container-toolkit-daemonset 2>/dev/null | grep -q "1/1"; then
+              echo "   ✓ GPU Operator is ready"
+              break
+            fi
+            echo "   Waiting for GPU Operator... ($ELAPSED/$MAX_WAIT seconds)"
+            sleep 10
+            ELAPSED=$((ELAPSED + 10))
+          done
+          
+          # Wait for CDI specs to be generated
+          echo ""
+          echo "2. Waiting for CDI specs to be generated..."
+          sleep 30
+          
+          # Get all nodes with GPUs
+          echo ""
+          echo "3. Finding nodes with GPUs..."
+          GPU_NODES=$(oc get nodes -l nvidia.com/gpu.present=true -o jsonpath='{.items[*].metadata.name}' 2>/dev/null || echo "")
+          
+          if [ -z "$GPU_NODES" ]; then
+            echo "   Checking all nodes for GPU labels..."
+            GPU_NODES=$(oc get nodes -o jsonpath='{.items[*].metadata.name}')
+          fi
+          
+          if [ -z "$GPU_NODES" ]; then
+            echo "   ERROR: No nodes found!"
+            exit 1
+          fi
+          
+          echo "   Found nodes: $GPU_NODES"
+          echo ""
+          
+          # Fix CDI spec on each node using oc debug
+          FIXED_COUNT=0
+          FAILED_COUNT=0
+          
+          for NODE in $GPU_NODES; do
+            echo "4. Fixing CDI spec on node: $NODE"
+            
+            oc debug node/$NODE -- chroot /host /bin/bash -c "
+              set -e
+              CDI_SPEC_FILE='/var/run/cdi/k8s.device-plugin.nvidia.com-gpu.json'
+              
+              if [ ! -f \"\$CDI_SPEC_FILE\" ]; then
+                echo '   ⚠ CDI spec file not found, skipping...'
+                exit 0
+              fi
+              
+              # Backup the original file
+              if [ ! -f \"\${CDI_SPEC_FILE}.backup\" ]; then
+                cp \"\$CDI_SPEC_FILE\" \"\${CDI_SPEC_FILE}.backup\"
+                echo '   ✓ Created backup'
+              fi
+              
+              # Fix using Python (available on OpenShift nodes)
+              python3 << 'PYEOF'
+import json
+import sys
+
+cdi_file = '/var/run/cdi/k8s.device-plugin.nvidia.com-gpu.json'
+
+try:
+    with open(cdi_file, 'r') as f:
+        data = json.load(f)
+    
+    # Remove all hooks
+    if 'containerEdits' in data:
+        if 'hooks' in data['containerEdits']:
+            print(f'   Removing {len(data[\"containerEdits\"][\"hooks\"])} hooks...')
+            data['containerEdits']['hooks'] = []
+        
+        # Set environment variables
+        data['containerEdits']['env'] = [
+            'NVIDIA_CTK_LIBCUDA_DIR=/usr/lib64',
+            'NVIDIA_VISIBLE_DEVICES=all'
+        ]
+        print('   ✓ Set NVIDIA_VISIBLE_DEVICES=all')
+    
+    # Write the fixed spec
+    with open(cdi_file, 'w') as f:
+        json.dump(data, f, indent=2)
+    
+    print('   ✓ CDI spec fixed successfully')
+    
+except FileNotFoundError:
+    print(f'   ⚠ CDI spec file not found')
+    sys.exit(0)
+except json.JSONDecodeError as e:
+    print(f'   ✗ Error parsing JSON: {e}')
+    sys.exit(1)
+except Exception as e:
+    print(f'   ✗ Error: {e}')
+    sys.exit(1)
+PYEOF
+            " && FIXED_COUNT=$((FIXED_COUNT + 1)) || FAILED_COUNT=$((FAILED_COUNT + 1))
+            
+            echo ""
+          done
+          
+          echo "============================================================"
+          echo "CDI Hook Fix Complete"
+          echo "============================================================"
+          echo "Nodes fixed: $FIXED_COUNT"
+          echo "Nodes failed: $FAILED_COUNT"
+          echo ""
+          
+          if [ $FAILED_COUNT -gt 0 ]; then
+            echo "WARNING: Some nodes failed to fix."
+            exit 1
+          fi
+          
+          echo "✓ All nodes fixed successfully!"
+          echo ""
+          echo "Note: The CDI spec files may be regenerated by the container-toolkit"
+          echo "daemonset. If the issue persists, restart the daemonset."
+        resources:
+          requests:
+            cpu: 100m
+            memory: 128Mi
+          limits:
+            cpu: 500m
+            memory: 512Mi
+
