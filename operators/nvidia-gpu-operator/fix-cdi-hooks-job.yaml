@@ -116,24 +116,52 @@ spec:
             # Pre-encoded Python script (base64) to avoid YAML parsing issues with heredocs
             PYTHON_SCRIPT_B64="aW1wb3J0IGpzb24KaW1wb3J0IHN5cwogCmNkaV9maWxlID0gIi92YXIvcnVuL2NkaS9rOHMuZGV2aWNlLXBsdWdpbi5udmlkaWEuY29tL2dwdS5qc29uIgogCnRyeToKICAgIHdpdGggb3BlbihjZGlfZmlsZSwgInIiKSBhcyBmOgogICAgICAgIGRhdGEgPSBqc29uLmxvYWQoZikKICAgIAogICAgIyBSZW1vdmUgYWxsIGhvb2tzCiAgICBpZiAiY29udGFpbmVyRWRpdHMiIGluIGRhdGE6CiAgICAgICAgaWYgImhvb2tzIiBpbiBkYXRhWyJjb250YWluZXJFZGl0cyJdOgogICAgICAgICAgICBwcmludChmIiAgICBSZW1vdmluZyB7bGVuKGRhdGFbJ2NvbnRhaW5lckVkaXRzJ11bJ2hvb2tzJ10pfSBob29rcy4uLiIpCiAgICAgICAgICAgIGRhdGFbImNvbnRhaW5lckVkaXRzIl1bImhvb2tzIl0gPSBbXQogICAgICAgIAogICAgICAgICMgU2V0IGVudmlyb25tZW50IHZhcmlhYmxlcwogICAgICAgIGRhdGFbImNvbnRhaW5lckVkaXRzIl1bImVudiJdID0gWwogICAgICAgICAgICAiTlZJRElBX0NUS19MSUJDVURBX0RJUj0vdXNyL2xpYjY0IiwKICAgICAgICAgICAgIk5WSURJQV9WSVNJQkxFX0RFVklDRVM9YWxsIgogICAgICAgIF0KICAgICAgICBwcmludCgiICAg4oiSIFNldCBOVklESUFfVklTSUJMRV9ERVZJQ0VTPWFsbCIpCiAgICAKICAgICMgV3JpdGUgdGhlIGZpeGVkIHNwZWMKICAgIHdpdGggb3BlbihjZGlfZmlsZSwgInciKSBhcyBmOgogICAgICAgIGpzb24uZHVtcChkYXRhLCBmLCBpbmRlbnQ9MikKICAgIAogICAgcHJpbnQoIiAgIOKIkiBDREkgc3BlYyBmaXhlZCBzdWNjZXNzZnVsbHkiKQogICAgCmV4Y2VwdCBGaWxlTm90Rm91bmRFcnJvcjoKICAgIHByaW50KCIgICDwn5KPIENESSBzcGVjIGZpbGUgbm90IGZvdW5kIikKICAgIHN5cy5leGl0KDApCmV4Y2VwdCBqc29uLkpTT05EZWNvZGVFcnJvciBhcyBlOgogICAgcHJpbnQoZiIgICDiiJMgRXJyb3IgcGFyc2luZyBKU09OOiB7ZX0iKQogICAgc3lzLmV4aXQoMSkKZXhjZXB0IEV4Y2VwdGlvbiBhcyBlOgogICAgcHJpbnQoZiIgICDiiJMgRXJyb3I6IHtlfSIpCiAgICBzeXMuZXhpdCgxKQ=="
             
-            oc debug node/$NODE -- chroot /host /bin/bash -c "
+            # Try to fix the CDI spec on this node
+            if oc debug node/$NODE -- chroot /host /bin/bash -c "
               set -e
               CDI_SPEC_FILE=\"/var/run/cdi/k8s.device-plugin.nvidia.com-gpu.json\"
               
+              # Check if file exists
               if [ ! -f \"\$CDI_SPEC_FILE\" ]; then
                 echo '   ⚠ CDI spec file not found, skipping...'
                 exit 0
               fi
               
+              # Check if Python is available
+              if ! command -v python3 &> /dev/null; then
+                echo '   ✗ ERROR: python3 not found on node'
+                exit 1
+              fi
+              
+              # Check if base64 is available
+              if ! command -v base64 &> /dev/null; then
+                echo '   ✗ ERROR: base64 not found on node'
+                exit 1
+              fi
+              
               # Backup the original file
               if [ ! -f \"\${CDI_SPEC_FILE}.backup\" ]; then
-                cp \"\$CDI_SPEC_FILE\" \"\${CDI_SPEC_FILE}.backup\"
+                cp \"\$CDI_SPEC_FILE\" \"\${CDI_SPEC_FILE}.backup\" || {
+                  echo '   ✗ ERROR: Failed to create backup'
+                  exit 1
+                }
                 echo '   ✓ Created backup'
+              else
+                echo '   ✓ Backup already exists'
               fi
               
               # Decode and run Python script
-              echo '$PYTHON_SCRIPT_B64' | base64 -d | python3
-            " && FIXED_COUNT=$((FIXED_COUNT + 1)) || FAILED_COUNT=$((FAILED_COUNT + 1))
+              echo '$PYTHON_SCRIPT_B64' | base64 -d | python3 || {
+                echo '   ✗ ERROR: Failed to decode or execute Python script'
+                exit 1
+              }
+            " 2>&1; then
+              FIXED_COUNT=$((FIXED_COUNT + 1))
+              echo "   ✓ Successfully fixed CDI spec on node $NODE"
+            else
+              FAILED_COUNT=$((FAILED_COUNT + 1))
+              echo "   ✗ Failed to fix CDI spec on node $NODE (check logs above for details)"
+            fi
             
             echo ""
           done
