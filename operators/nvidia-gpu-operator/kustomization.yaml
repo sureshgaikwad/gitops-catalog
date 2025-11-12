@@ -8,6 +8,7 @@ resources:
   - clusterpolicy.yaml
   - fix-cdi-hooks-rbac.yaml
   - fix-cdi-hooks-job.yaml
+  - fix-cdi-hooks-cronjob.yaml
 
 # Note: The fix-cdi-hooks Job will run after the GPU operator is installed
 # and fix the CDI spec files on all GPU nodes by removing problematic hooks

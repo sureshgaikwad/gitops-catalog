@@ -1,0 +1,86 @@
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: fix-cdi-hooks
+  namespace: nvidia-gpu-operator
+  annotations:
+    argocd.argoproj.io/sync-wave: "11"
+    argocd.argoproj.io/sync-options: SkipDryRunOnMissingResource=true
+spec:
+  # Run every 5 minutes to keep CDI specs fixed
+  schedule: "*/5 * * * *"
+  successfulJobsHistoryLimit: 1
+  failedJobsHistoryLimit: 1
+  jobTemplate:
+    spec:
+      ttlSecondsAfterFinished: 300
+      backoffLimit: 1
+      template:
+        metadata:
+          labels:
+            app: fix-cdi-hooks
+        spec:
+          serviceAccountName: fix-cdi-hooks
+          restartPolicy: OnFailure
+          containers:
+          - name: fix-cdi
+            image: quay.io/openshift/origin-cli:latest
+            command:
+            - /bin/bash
+            - -c
+            - |
+              set -e
+              echo "============================================================"
+              echo "Periodic CDI Hook Fix (CronJob)"
+              echo "============================================================"
+              echo ""
+              
+              # Get all nodes with GPUs
+              GPU_NODES=$(oc get nodes -l nvidia.com/gpu.present=true -o jsonpath='{.items[*].metadata.name}' 2>/dev/null || echo "")
+              
+              if [ -z "$GPU_NODES" ]; then
+                echo "No GPU nodes found, exiting..."
+                exit 0
+              fi
+              
+              echo "Found GPU nodes: $GPU_NODES"
+              echo ""
+              
+              # Pre-encoded Python script (base64)
+              PYTHON_SCRIPT_B64="aW1wb3J0IGpzb24KaW1wb3J0IHN5cwogCmNkaV9maWxlID0gIi92YXIvcnVuL2NkaS9rOHMuZGV2aWNlLXBsdWdpbi5udmlkaWEuY29tL2dwdS5qc29uIgogCnRyeToKICAgIHdpdGggb3BlbihjZGlfZmlsZSwgInIiKSBhcyBmOgogICAgICAgIGRhdGEgPSBqc29uLmxvYWQoZikKICAgIAogICAgIyBSZW1vdmUgYWxsIGhvb2tzCiAgICBpZiAiY29udGFpbmVyRWRpdHMiIGluIGRhdGE6CiAgICAgICAgaWYgImhvb2tzIiBpbiBkYXRhWyJjb250YWluZXJFZGl0cyJdOgogICAgICAgICAgICBob29rX2NvdW50ID0gbGVuKGRhdGFbImNvbnRhaW5lckVkaXRzIl1bImhvb2tzIl0pCiAgICAgICAgICAgIGlmIGhvb2tfY291bnQgPiAwOgogICAgICAgICAgICAgICAgcHJpbnQoZiIgICBSZW1vdmluZyB7aG9va19jb3VudH0gaG9va3MuLi4iKQogICAgICAgICAgICAgICAgZGF0YVsiY29udGFpbmVyRWRpdHMiXVsiaG9va3MiXSA9IFtdCiAgICAgICAgICAgIGVsc2U6CiAgICAgICAgICAgICAgICBwcmludCgiICAgQ0RJIHNwZWMgYWxyZWFkeSBoYXMgbm8gaG9va3MiKQogICAgICAgICAgICAgICAgc3lzLmV4aXQoMCkKICAgICAgICAKICAgICAgICAjIFNldCBlbnZpcm9ubWVudCB2YXJpYWJsZXMKICAgICAgICBkYXRhWyJjb250YWluZXJFZGl0cyJdWyJlbnYiXSA9IFsKICAgICAgICAgICAgIk5WSURJQV9DVEtfTElCQ1VEQV9ESVI9L3Vzci9saWI2NCIsCiAgICAgICAgICAgICJOVklESUFfVklTSUJMRV9ERVZJQ0VTPWFsbCIKICAgICAgICBdCiAgICAgICAgcHJpbnQoIiAgIOKIkiBTZXQgTlZJRElBX1ZJU0lCTEVfREVWSUNFUz1hbGwiKQogICAgCiAgICAjIFdyaXRlIHRoZSBmaXhlZCBzcGVjCiAgICB3aXRoIG9wZW4oY2RpX2ZpbGUsICJ3IikgYXMgZjoKICAgICAgICBqc29uLmR1bXAoZGF0YSwgZiwgaW5kZW50PTIpCiAgICAKICAgIHByaW50KCIgICDiiJIgQ0RJIHNwZWMgZml4ZWQgc3VjY2Vzc2Z1bGx5IikKICAgIApleGNlcHQgRmlsZU5vdEZvdW5kRXJyb3I6CiAgICBwcmludCgiICAg4p+Sj0NESSBzcGVjIGZpbGUgbm90IGZvdW5kIikKICAgIHN5cy5leGl0KDApCmV4Y2VwdCBqc29uLkpTT05EZWNvZGVFcnJvciBhcyBlOgogICAgcHJpbnQoZiIgICDiiJMgRXJyb3IgcGFyc2luZyBKU09OOiB7ZX0iKQogICAgc3lzLmV4aXQoMSkKZXhjZXB0IEV4Y2VwdGlvbiBhcyBlOgogICAgcHJpbnQoZiIgICDiiJMgRXJyb3I6IHtlfSIpCiAgICBzeXMuZXhpdCgxKQ=="
+              
+              FIXED_COUNT=0
+              for NODE in $GPU_NODES; do
+                echo "Fixing CDI spec on node: $NODE"
+                
+                if oc debug node/$NODE -- chroot /host /bin/bash -c "
+                  set -e
+                  CDI_SPEC_FILE=\"/var/run/cdi/k8s.device-plugin.nvidia.com-gpu.json\"
+                  
+                  if [ ! -f \"\$CDI_SPEC_FILE\" ]; then
+                    exit 0
+                  fi
+                  
+                  if ! command -v python3 &> /dev/null || ! command -v base64 &> /dev/null; then
+                    exit 1
+                  fi
+                  
+                  echo '$PYTHON_SCRIPT_B64' | base64 -d | python3
+                " 2>&1; then
+                  FIXED_COUNT=$((FIXED_COUNT + 1))
+                  echo "  ✓ Fixed"
+                else
+                  echo "  ✗ Failed"
+                fi
+              done
+              
+              echo ""
+              echo "Fixed $FIXED_COUNT node(s)"
+            resources:
+              requests:
+                cpu: 100m
+                memory: 128Mi
+              limits:
+                cpu: 500m
+                memory: 512Mi
+
