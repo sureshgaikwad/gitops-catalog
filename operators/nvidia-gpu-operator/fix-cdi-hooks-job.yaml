@@ -31,47 +31,52 @@ spec:
           echo "============================================================"
           echo ""
           
-          # Wait for GPU operator to be ready (check multiple daemonsets)
+          # Wait for GPU operator to be ready (check actual pods, not just daemonset status)
           echo "1. Waiting for NVIDIA GPU Operator to be ready..."
-          MAX_WAIT=600
+          MAX_WAIT=300
           ELAPSED=0
           while [ $ELAPSED -lt $MAX_WAIT ]; do
-            # Check if any GPU operator daemonset exists and has pods
-            DS_READY=false
-            for DS_NAME in nvidia-container-toolkit-daemonset nvidia-container-toolkit; do
-              DS_STATUS=$(oc get daemonset -n nvidia-gpu-operator $DS_NAME -o jsonpath='{.status.numberReady}/{.status.desiredNumberScheduled}' 2>/dev/null || echo "0/0")
-              if [ "$DS_STATUS" != "0/0" ] && [ "$DS_STATUS" != "" ]; then
-                READY=$(echo $DS_STATUS | cut -d'/' -f1)
-                DESIRED=$(echo $DS_STATUS | cut -d'/' -f2)
-                if [ "$READY" -gt 0 ] && [ "$READY" -eq "$DESIRED" ] 2>/dev/null; then
-                  echo "   ✓ GPU Operator daemonset $DS_NAME is ready ($DS_STATUS)"
-                  DS_READY=true
-                  break
-                elif [ "$READY" -gt 0 ]; then
-                  echo "   GPU Operator daemonset $DS_NAME is partially ready ($DS_STATUS), continuing..."
-                  DS_READY=true
-                  break
-                fi
-              fi
-            done
+            # Check if namespace exists first
+            if ! oc get namespace nvidia-gpu-operator &>/dev/null; then
+              echo "   Namespace nvidia-gpu-operator does not exist yet... ($ELAPSED/$MAX_WAIT seconds)"
+              sleep 10
+              ELAPSED=$((ELAPSED + 10))
+              continue
+            fi
             
-            # Also check if CDI spec files already exist (operator might be ready but daemonset check failed)
-            if [ "$DS_READY" = "false" ]; then
+            # Check for actual running pods instead of daemonset status
+            # Look for container-toolkit pods that are running
+            TOOLKIT_PODS=$(oc get pods -n nvidia-gpu-operator -l app=nvidia-container-toolkit --field-selector=status.phase=Running -o jsonpath='{.items[*].metadata.name}' 2>/dev/null || echo "")
+            
+            if [ -n "$TOOLKIT_PODS" ]; then
+              # Check if at least one pod is ready
+              READY_PODS=$(oc get pods -n nvidia-gpu-operator -l app=nvidia-container-toolkit --field-selector=status.phase=Running -o jsonpath='{range .items[*]}{.metadata.name}{" "}{.status.containerStatuses[0].ready}{"\n"}{end}' 2>/dev/null | grep -c " true" || echo "0")
+              
+              if [ "$READY_PODS" -gt 0 ]; then
+                echo "   ✓ GPU Operator container-toolkit pods are running and ready ($READY_PODS pod(s) ready)"
+                break
+              else
+                echo "   Container-toolkit pods exist but not ready yet... ($ELAPSED/$MAX_WAIT seconds)"
+              fi
+            else
+              # Fallback: Check for any nvidia-gpu-operator pods
+              ANY_PODS=$(oc get pods -n nvidia-gpu-operator --field-selector=status.phase=Running -o jsonpath='{.items[*].metadata.name}' 2>/dev/null | wc -w)
+              if [ "$ANY_PODS" -gt 0 ]; then
+                echo "   GPU Operator pods are running (found $ANY_PODS pod(s)), assuming ready..."
+                break
+              fi
+              
+              # Also check if CDI spec files already exist (operator might be ready but pods not labeled correctly)
               GPU_NODES_CHECK=$(oc get nodes -l nvidia.com/gpu.present=true -o jsonpath='{.items[*].metadata.name}' 2>/dev/null || echo "")
               if [ -n "$GPU_NODES_CHECK" ]; then
                 # Check if CDI spec exists on at least one node
                 for CHECK_NODE in $GPU_NODES_CHECK; do
                   if oc debug node/$CHECK_NODE -- chroot /host test -f /var/run/cdi/k8s.device-plugin.nvidia.com-gpu.json 2>/dev/null; then
                     echo "   ✓ CDI spec file found on node $CHECK_NODE, GPU operator appears ready"
-                    DS_READY=true
-                    break
+                    break 2
                   fi
                 done
               fi
-            fi
-            
-            if [ "$DS_READY" = "true" ]; then
-              break
             fi
             
             echo "   Waiting for GPU Operator... ($ELAPSED/$MAX_WAIT seconds)"
@@ -80,13 +85,14 @@ spec:
           done
           
           if [ $ELAPSED -ge $MAX_WAIT ]; then
-            echo "   ⚠ WARNING: GPU Operator may not be fully ready, but continuing anyway..."
+            echo "   ⚠ WARNING: GPU Operator readiness check timed out, but continuing anyway..."
+            echo "   (This is OK if GPU operator is actually running)"
           fi
           
           # Wait a bit more for CDI specs to be generated on all nodes
           echo ""
           echo "2. Waiting for CDI specs to be generated..."
-          sleep 20
+          sleep 15
           
           # Get all nodes with GPUs
           echo ""
