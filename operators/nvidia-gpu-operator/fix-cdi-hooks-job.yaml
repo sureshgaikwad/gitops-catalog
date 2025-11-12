@@ -75,23 +75,8 @@ spec:
           for NODE in $GPU_NODES; do
             echo "4. Fixing CDI spec on node: $NODE"
             
-            oc debug node/$NODE -- chroot /host /bin/bash -c '
-              set -e
-              CDI_SPEC_FILE="/var/run/cdi/k8s.device-plugin.nvidia.com-gpu.json"
-              
-              if [ ! -f "$CDI_SPEC_FILE" ]; then
-                echo "   ⚠ CDI spec file not found, skipping..."
-                exit 0
-              fi
-              
-              # Backup the original file
-              if [ ! -f "${CDI_SPEC_FILE}.backup" ]; then
-                cp "$CDI_SPEC_FILE" "${CDI_SPEC_FILE}.backup"
-                echo "   ✓ Created backup"
-              fi
-              
-              # Fix using Python (available on OpenShift nodes)
-              python3 << "PYSCRIPT"
+            # Create Python script as base64 to avoid YAML parsing issues
+            PYTHON_SCRIPT=$(cat <<'PYTHON_EOF' | base64 | tr -d '\n'
 import json
 import sys
 
@@ -104,7 +89,7 @@ try:
     # Remove all hooks
     if "containerEdits" in data:
         if "hooks" in data["containerEdits"]:
-            print(f"   Removing {len(data[\"containerEdits\"][\"hooks\"])} hooks...")
+            print(f"   Removing {len(data['containerEdits']['hooks'])} hooks...")
             data["containerEdits"]["hooks"] = []
         
         # Set environment variables
@@ -129,8 +114,27 @@ except json.JSONDecodeError as e:
 except Exception as e:
     print(f"   ✗ Error: {e}")
     sys.exit(1)
-PYSCRIPT
-            ' && FIXED_COUNT=$((FIXED_COUNT + 1)) || FAILED_COUNT=$((FAILED_COUNT + 1))
+PYTHON_EOF
+)
+            
+            oc debug node/$NODE -- chroot /host /bin/bash -c "
+              set -e
+              CDI_SPEC_FILE=\"/var/run/cdi/k8s.device-plugin.nvidia.com-gpu.json\"
+              
+              if [ ! -f \"\$CDI_SPEC_FILE\" ]; then
+                echo '   ⚠ CDI spec file not found, skipping...'
+                exit 0
+              fi
+              
+              # Backup the original file
+              if [ ! -f \"\${CDI_SPEC_FILE}.backup\" ]; then
+                cp \"\$CDI_SPEC_FILE\" \"\${CDI_SPEC_FILE}.backup\"
+                echo '   ✓ Created backup'
+              fi
+              
+              # Decode and run Python script
+              echo '$PYTHON_SCRIPT' | base64 -d | python3
+            " && FIXED_COUNT=$((FIXED_COUNT + 1)) || FAILED_COUNT=$((FAILED_COUNT + 1))
             
             echo ""
           done
