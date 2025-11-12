@@ -27,7 +27,7 @@ rules:
   verbs: ["create"]
 - apiGroups: [""]
   resources: ["namespaces"]
-  verbs: ["get", "list"]
+  verbs: ["get", "list", "create", "delete"]
 - apiGroups: ["apps"]
   resources: ["daemonsets"]
   verbs: ["get", "list"]
