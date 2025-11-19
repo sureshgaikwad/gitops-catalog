@@ -5,7 +5,7 @@ metadata:
   namespace: openshift-lightspeed
   annotations:
     argocd.argoproj.io/sync-wave: "3"
-    argocd.argoproj.io/sync-options: SkipDryRunOnMissingResource=true
+    argocd.argoproj.io/sync-options: SkipDryRunOnMissingResource=true,Validate=false
   labels:
     app.kubernetes.io/component: ai-assistant
     app.kubernetes.io/instance: openshift-lightspeed
@@ -31,12 +31,6 @@ spec:
       sseReadTimeout: 10
       timeout: 5
       url: 'http://cluster-health-mcp-server.openshift-cluster-observability-operator.svc.cluster.local:8085/mcp'
-    - name: your-second-mcp-server
-      streamableHTTP:
-        enableSSE: false
-        sseReadTimeout: 10
-        timeout: 5
-        url: http://mcp-server.ocp-mcp-server.svc.cluster.local/mcp
   ols:
     defaultProvider: red_hat_openshift_ai
     defaultModel: mistral-small-24b-instruct-quantized
