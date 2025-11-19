@@ -5,7 +5,7 @@ metadata:
   namespace: openshift-lightspeed
   annotations:
     argocd.argoproj.io/sync-wave: "3"
-    argocd.argoproj.io/sync-options: SkipDryRunOnMissingResource=true,Validate=false
+    argocd.argoproj.io/sync-options: SkipDryRunOnMissingResource=true
   labels:
     app.kubernetes.io/component: ai-assistant
     app.kubernetes.io/instance: openshift-lightspeed
