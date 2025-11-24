@@ -1,0 +1,55 @@
+name: Local Agent
+version: 1.0.0
+schema: v1
+models:
+  - name: Mistral AI (Local)
+    provider: openai
+    model: mistral-small-24b-instruct-quantized
+    apiBase: http://mistral-small-24b-instruct-quantized-predictor.models.svc.cluster.local:8080/v1
+    apiKey: ""
+    contextLength: 8192
+
+tabAutocompleteModel:
+  name: Mistral AI (Local)
+  provider: openai
+  model: mistral-small-24b-instruct-quantized
+  apiBase: http://mistral-small-24b-instruct-quantized-predictor.models.svc.cluster.local:8080/v1
+  apiKey: ""
+
+embeddingsProvider:
+  provider: openai
+  apiBase: http://mistral-small-24b-instruct-quantized-predictor.models.svc.cluster.local:8080/v1
+  apiKey: ""
+
+
+allowAnonymousTelemetry: false
+
+
+
+
+mcpServers:
+  - name: kubernetes-mcp-server
+    command: npx
+    args: ["-y", "kubernetes-mcp-server@latest"]
+
+
+
+# MCP Servers the agent can use
+# https://docs.continue.dev/reference#mcpservers
+# Note: Continue requires command-based MCP servers (stdio transport)
+# For HTTP-based servers, use a wrapper script that bridges stdio to HTTP
+# 
+# Option 1: Use the provided HTTP bridge script (copy to workspace first)
+# mcpServers:
+#   - name: ocp-mcp-server
+#     command: /home/user/mcp-http-bridge.sh
+#     args: []
+#     requestOptions:
+#       verifySsl: true
+#       timeout: 30000
+#
+# Option 2: If your MCP server supports stdio, use it directly:
+# mcpServers:
+#   - name: ocp-mcp-server
+#     command: <path-to-mcp-server-binary>
+#     args: []

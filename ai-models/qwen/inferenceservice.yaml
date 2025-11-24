@@ -1,0 +1,45 @@
+# Attach model to vllm server. This is an NVIDIA template
+# Save as: inferenceservice.yaml
+apiVersion: serving.kserve.io/v1beta1
+kind: InferenceService
+metadata:
+  annotations:
+    openshift.io/display-name: Qwen3-Coder-480B-A35B-Instruct-FP8 # OPTIONAL CHANGE
+    serving.kserve.io/deploymentMode: RawDeployment
+    argocd.argoproj.io/sync-wave: "1"
+#    security.opendatahub.io/enable-auth: "true"  # Critical for token auth
+#    serving.knative.openshift.io/enablePassthrough: "true"  # Critical for auth
+#    sidecar.istio.io/inject: "true"  # For service mesh
+#    sidecar.istio.io/rewriteAppHTTPProbers: "true"  # For health checks
+  name: qwen3-coder-480b-a35b-instruct-fp8          # specify model name. This value will be used to invoke the model in the payload
+  namespace: models
+  labels:
+    opendatahub.io/dashboard: 'true'
+    modelregistry.opendatahub.io/registered: 'true'
+spec:
+  predictor:
+    maxReplicas: 1
+    minReplicas: 1
+    model:
+      modelFormat:
+        name: vLLM
+      name: ''
+      resources:
+        limits:
+          cpu: '2'			# this is model specific
+          memory: 16Gi		# this is model specific
+          nvidia.com/gpu: '1'	# this is accelerator specific
+        requests:			# same comment for this block
+          cpu: '2'
+          memory: 8Gi
+          nvidia.com/gpu: '1'
+      runtime: vllm-cuda-runtime	# must match the ServingRuntime name above
+      storageUri: oci://registry.redhat.io/rhelai1/modelcar-qwen3-coder-480b-a35b-instruct-fp8:1.5
+      args:
+        - "--max-model-len=8192"
+        - "--gpu-memory-utilization=0.95"
+    tolerations:
+    - effect: NoSchedule
+      key: nvidia.com/gpu
+      operator: Exists
+

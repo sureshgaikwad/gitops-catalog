@@ -1,0 +1,12 @@
+apiVersion: route.openshift.io/v1
+kind: Route
+metadata:
+  name: qwen3-coder-480b-a35b-instruct-fp8
+spec:
+  to:
+    kind: Service
+    name: qwen3-coder-480b-a35b-instruct-fp8-predictor
+  port:
+    targetPort: 8080
+  tls:
+    termination: edge

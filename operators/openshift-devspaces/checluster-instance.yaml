@@ -1,0 +1,58 @@
+apiVersion: org.eclipse.che/v2
+kind: CheCluster
+metadata:
+  annotations:
+    argocd.argoproj.io/sync-wave: "2"
+    argocd.argoproj.io/sync-options: SkipDryRunOnMissingResource=true
+  name: devspaces
+  namespace: openshift-devspaces
+spec:
+  components:
+    cheServer:
+      debug: false
+      extraProperties:
+        CHE_LIMITS_USER_RUNNING_WORKSPACES_COUNT: "-1"
+      logLevel: INFO
+    dashboard:
+      logLevel: ERROR
+    devWorkspace:
+      runningLimit: "100"
+    devWorkspace: {}
+    devfileRegistry: {}
+    imagePuller:
+      enable: false
+      spec: {}
+    metrics:
+      enable: true
+    pluginRegistry: {}
+  containerRegistry: {}
+  devEnvironments:
+    containerBuildConfiguration:
+      openShiftSecurityContextConstraint: container-build
+    defaultComponents:
+    - name: continue-config-volume
+      volume:
+        size: 1Gi
+    defaultNamespace:
+      autoProvision: true
+      template: <username>-devspaces
+    defaultPlugins:
+      - plugins:
+          - Continue.continue@latest
+          - redhat.vscode-openshift-connector@latest
+    ignoredUnrecoverableEvents:
+    - FailedScheduling
+    maxNumberOfWorkspacesPerUser: -1
+    secondsOfInactivityBeforeIdling: 1800
+    secondsOfRunBeforeIdling: -1
+    security: {}
+    startTimeoutSeconds: 300
+    storage:
+      pvcStrategy: per-user
+  gitServices: {}
+  networking:
+    auth:
+      gateway:
+        configLabels:
+          app: che
+          component: che-gateway-config
