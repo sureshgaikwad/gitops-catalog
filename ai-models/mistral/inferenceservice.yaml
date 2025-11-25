@@ -25,17 +25,17 @@ spec:
       name: ''
       resources:
         limits:
-          cpu: '2'			# this is model specific
-          memory: 16Gi		# this is model specific
+          cpu: '20'			# this is model specific
+          memory: 80Gi		# this is model specific
           nvidia.com/gpu: '1'	# this is accelerator specific
         requests:			# same comment for this block
-          cpu: '2'
-          memory: 8Gi
+          cpu: '20'
+          memory: 80Gi
           nvidia.com/gpu: '1'
       runtime: vllm-cuda-runtime	# must match the ServingRuntime name above
       storageUri: oci://registry.redhat.io/rhelai1/modelcar-mistral-small-3-1-24b-instruct-2503-quantized-w4a16:1.5
       args:
-        - "--max-model-len=8192"
+        - "--max-model-len=30000"
         - "--gpu-memory-utilization=0.95"
     tolerations:
     - effect: NoSchedule
