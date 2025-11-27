@@ -1,0 +1,46 @@
+apiVersion: argoproj.io/v1alpha1
+kind: ApplicationSet
+metadata:
+  name: openshift-lightspeed-operator
+  namespace: openshift-gitops
+spec:
+  generators:
+    - clusterDecisionResource:
+        configMapRef: acm-placement
+        labelSelector:
+          matchLabels:
+            cluster.open-cluster-management.io/placement: openshift-lightspeed-placement
+        requeueAfterSeconds: 180
+  template:
+    metadata:
+      name: openshift-lightspeed-{{name}}
+      labels:
+        velero.io/exclude-from-backup: "true"
+    spec:
+      destination:
+        namespace: openshift-lightspeed
+        server: "{{server}}"
+      project: default
+      sources:
+        - path: operators/openshift-lightspeed
+          repoURL: https://github.com/sureshgaikwad/gitops-catalog.git
+          repositoryType: git
+      syncPolicy:
+        automated:
+          prune: true
+          selfHeal: true
+        syncOptions:
+          - CreateNamespace=true
+          - PruneLast=true
+          - Validate=true
+---
+apiVersion: cluster.open-cluster-management.io/v1beta1
+kind: Placement
+metadata:
+  name: openshift-lightspeed-placement
+  namespace: openshift-gitops
+spec:
+  clusterSets:
+    - default
+  numberOfClusters: 1
+

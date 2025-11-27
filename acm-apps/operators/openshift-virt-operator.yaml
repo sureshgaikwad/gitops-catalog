@@ -1,0 +1,49 @@
+apiVersion: argoproj.io/v1alpha1
+kind: ApplicationSet
+metadata:
+  name: openshift-virt-operator
+  namespace: openshift-gitops
+spec:
+  generators:
+    - clusterDecisionResource:
+        configMapRef: acm-placement
+        labelSelector:
+          matchLabels:
+            cluster.open-cluster-management.io/placement: virt-placement
+        requeueAfterSeconds: 180
+  template:
+    metadata:
+      name: virt-{{name}}
+      labels:
+        velero.io/exclude-from-backup: "true"
+    spec:
+      destination:
+        namespace: openshift-cnv
+        server: "{{server}}"
+      project: default
+      sources:
+        - path: operators/openshift-virtualization
+          repoURL: https://github.com/sureshgaikwad/gitops-catalog.git
+          repositoryType: git
+      syncPolicy:
+        automated:
+          prune: true
+          selfHeal: true
+        syncOptions:
+          - CreateNamespace=true
+          - PruneLast=true
+          - Validate=true
+---
+apiVersion: cluster.open-cluster-management.io/v1beta1
+kind: Placement
+metadata:
+  name: virt-placement
+  namespace: openshift-gitops
+  creationTimestamp: 2025-11-26T14:50:41Z
+  generation: 1
+  resourceVersion: "69163"
+  uid: c69797b8-aced-4b77-ba2a-45f09bd88a1e
+spec:
+  clusterSets:
+    - default
+  numberOfClusters: 1

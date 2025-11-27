@@ -1,0 +1,46 @@
+apiVersion: argoproj.io/v1alpha1
+kind: ApplicationSet
+metadata:
+  name: advance-cluster-management-operator
+  namespace: openshift-gitops
+spec:
+  generators:
+    - clusterDecisionResource:
+        configMapRef: acm-placement
+        labelSelector:
+          matchLabels:
+            cluster.open-cluster-management.io/placement: acm-placement
+        requeueAfterSeconds: 180
+  template:
+    metadata:
+      name: acm-{{name}}
+      labels:
+        velero.io/exclude-from-backup: "true"
+    spec:
+      destination:
+        namespace: open-cluster-management
+        server: "{{server}}"
+      project: default
+      sources:
+        - path: operators/advance-cluster-management
+          repoURL: https://github.com/sureshgaikwad/gitops-catalog.git
+          repositoryType: git
+      syncPolicy:
+        automated:
+          prune: true
+          selfHeal: true
+        syncOptions:
+          - CreateNamespace=true
+          - PruneLast=true
+          - Validate=true
+---
+apiVersion: cluster.open-cluster-management.io/v1beta1
+kind: Placement
+metadata:
+  name: acm-placement
+  namespace: openshift-gitops
+spec:
+  clusterSets:
+    - default
+  numberOfClusters: 1
+

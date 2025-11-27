@@ -1,0 +1,46 @@
+apiVersion: argoproj.io/v1alpha1
+kind: ApplicationSet
+metadata:
+  name: authorino-operator
+  namespace: openshift-gitops
+spec:
+  generators:
+    - clusterDecisionResource:
+        configMapRef: acm-placement
+        labelSelector:
+          matchLabels:
+            cluster.open-cluster-management.io/placement: authorino-placement
+        requeueAfterSeconds: 180
+  template:
+    metadata:
+      name: authorino-{{name}}
+      labels:
+        velero.io/exclude-from-backup: "true"
+    spec:
+      destination:
+        namespace: openshift-operators
+        server: "{{server}}"
+      project: default
+      sources:
+        - path: operators/authorino-operator
+          repoURL: https://github.com/sureshgaikwad/gitops-catalog.git
+          repositoryType: git
+      syncPolicy:
+        automated:
+          prune: true
+          selfHeal: true
+        syncOptions:
+          - CreateNamespace=true
+          - PruneLast=true
+          - Validate=true
+---
+apiVersion: cluster.open-cluster-management.io/v1beta1
+kind: Placement
+metadata:
+  name: authorino-placement
+  namespace: openshift-gitops
+spec:
+  clusterSets:
+    - default
+  numberOfClusters: 1
+

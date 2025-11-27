@@ -1,0 +1,46 @@
+apiVersion: argoproj.io/v1alpha1
+kind: ApplicationSet
+metadata:
+  name: nvidia-gpu-operator
+  namespace: openshift-gitops
+spec:
+  generators:
+    - clusterDecisionResource:
+        configMapRef: acm-placement
+        labelSelector:
+          matchLabels:
+            cluster.open-cluster-management.io/placement: nvidia-gpu-placement
+        requeueAfterSeconds: 180
+  template:
+    metadata:
+      name: nvidia-gpu-{{name}}
+      labels:
+        velero.io/exclude-from-backup: "true"
+    spec:
+      destination:
+        namespace: nvidia-gpu-operator
+        server: "{{server}}"
+      project: default
+      sources:
+        - path: operators/nvidia-gpu-operator
+          repoURL: https://github.com/sureshgaikwad/gitops-catalog.git
+          repositoryType: git
+      syncPolicy:
+        automated:
+          prune: true
+          selfHeal: true
+        syncOptions:
+          - CreateNamespace=true
+          - PruneLast=true
+          - Validate=true
+---
+apiVersion: cluster.open-cluster-management.io/v1beta1
+kind: Placement
+metadata:
+  name: nvidia-gpu-placement
+  namespace: openshift-gitops
+spec:
+  clusterSets:
+    - default
+  numberOfClusters: 1
+
