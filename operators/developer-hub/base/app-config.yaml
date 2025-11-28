@@ -15,7 +15,7 @@ data:
   app-config.yaml: |
     app:
       title: Red Hat Developer Hub
-      baseUrl: https://backstage-developer-hub-demo-project.apps.rosa.sgaikwad.uwl9.p3.openshiftapps.com
+      baseUrl: https://backstage-developer-hub-demo-project.apps.rosa.suresh-mobb.rvvd.p3.openshiftapps.com
       # Optional: Custom branding (uncomment and configure as needed)
       # branding:
       #   fullLogo: data:image/jpeg;base64,<BASE64_ENCODED_IMAGE>
@@ -33,9 +33,9 @@ data:
       #       navigationIndicatorColor: "#444444"
     
     backend:
-      baseUrl: https://backstage-developer-hub-demo-project.apps.rosa.sgaikwad.uwl9.p3.openshiftapps.com
+      baseUrl: https://backstage-developer-hub-demo-project.apps.rosa.suresh-mobb.rvvd.p3.openshiftapps.com
       cors:
-        origin: https://backstage-developer-hub-demo-project.apps.rosa.sgaikwad.uwl9.p3.openshiftapps.com
+        origin: https://backstage-developer-hub-demo-project.apps.rosa.suresh-mobb.rvvd.p3.openshiftapps.com
         methods: [GET, HEAD, PATCH, POST, PUT, DELETE]
         credentials: true
       database:
@@ -60,7 +60,7 @@ data:
         # OIDC Provider (Keycloak) - Primary authentication method
         oidc:
           production:
-            metadataUrl: https://keycloak-rhbk.apps.rosa.sgaikwad.uwl9.p3.openshiftapps.com/realms/myrealm/.well-known/openid-configuration
+            metadataUrl: https://keycloak-rhbk.apps.rosa.suresh-mobb.rvvd.p3.openshiftapps.com/realms/myrealm/.well-known/openid-configuration
             clientId: ${AUTH_OIDC_CLIENT_ID}
             clientSecret: ${AUTH_OIDC_CLIENT_SECRET}
             prompt: auto
