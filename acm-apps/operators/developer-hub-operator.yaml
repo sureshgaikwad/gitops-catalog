@@ -18,7 +18,7 @@ spec:
         velero.io/exclude-from-backup: "true"
     spec:
       destination:
-        namespace: backstage-demo-project
+        namespace: demo-project
         server: "{{server}}"
       project: default
       sources:

@@ -7,6 +7,6 @@ spec:
     kind: Service
     name: mistral-small-24b-instruct-quantized-predictor
   port:
-    targetPort: 8080
+    targetPort: http
   tls:
     termination: edge

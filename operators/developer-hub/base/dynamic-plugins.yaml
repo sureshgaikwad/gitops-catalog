@@ -16,28 +16,57 @@ data:
     includes:
       - dynamic-plugins.default.yaml
     plugins:
-      # ArgoCD Plugin - Backend (disabled until integrity hash is configured)
-      - package: '@roadiehq/backstage-plugin-argo-cd-backend-dynamic@2.13.0'
-        disabled: true
+      # GitHub Catalog Backend Module - Catalog Discovery
+      - package: './dynamic-plugins/dist/backstage-plugin-catalog-backend-module-github-dynamic'
+        disabled: false
       
-      # ArgoCD Plugin - Frontend (disabled until integrity hash is configured)
-      - package: '@roadiehq/backstage-plugin-argo-cd@2.10.2'
+      # GitHub Org Catalog Backend Module - Organization Data
+      - package: './dynamic-plugins/dist/backstage-plugin-catalog-backend-module-github-org-dynamic'
+        disabled: false
+      
+      # Orchestrator Plugin (disabled by default - enable if SonataFlow is deployed)
+      - package: '@redhat/backstage-plugin-orchestrator@1.8.2'
+        integrity: sha512-rnUA6iZ2JVAyASfwS4P9HeFmpqCgH6FQouzzg4s6lCPAsYUFvu6tifJ3df5lThXPUTJ2cDvvQgamU+4DiHP2jw==
         disabled: true
         pluginConfig:
           dynamicPlugins:
             frontend:
-              roadiehq.backstage-plugin-argo-cd:
+              red-hat-developer-hub.backstage-plugin-orchestrator:
                 appIcons:
-                  - name: argocdIcon
-                    module: ArgocdIcon
+                - importName: OrchestratorIcon
+                  name: orchestratorIcon
                 dynamicRoutes:
-                  - path: /argo-cd
-                    importName: ArgocdPage
-                    menuItem:
-                      icon: argocdIcon
-                      text: ArgoCD
+                - importName: OrchestratorPage
+                  menuItem:
+                    icon: orchestratorIcon
+                    text: Orchestrator
+                  path: /orchestrator
+                entityTabs:
+                - mountPoint: entity.page.workflows
+                  path: /workflows
+                  title: Workflows
+                mountPoints:
+                - config:
+                    layout:
+                      gridColumn: 1 / -1
+                      if:
+                        anyOf:
+                        - IsOrchestratorCatalogTabAvailable
+                  importName: OrchestratorCatalogTab
+                  mountPoint: entity.page.workflows/cards
       
-      # Tekton Plugin (disabled until properly configured)
+      # Orchestrator Backend Plugin (disabled by default)
+      - package: '@redhat/backstage-plugin-orchestrator-backend-dynamic@1.8.2'
+        integrity: sha512-6G0YguzCM5nCDpOrIGJpLTXVMr6EBdIVqSXtsLH9RvBH25RTuFpfJ7q6eEp26DqveaiqUCfBpJ51smdjcsEzFQ==
+        disabled: true
+        pluginConfig:
+          orchestrator:
+            dataIndexService:
+              url: http://sonataflow-platform-data-index-service
+        dependencies:
+        - ref: sonataflow
+      
+      # Tekton Plugin (disabled by default - enable if Tekton is deployed)
       - package: './dynamic-plugins/dist/janus-idp-backstage-plugin-tekton'
         disabled: true
         pluginConfig:
@@ -45,18 +74,14 @@ data:
             frontend:
               janus-idp.backstage-plugin-tekton:
                 appIcons:
-                  - name: tektonIcon
-                    module: TektonIcon
+                - module: TektonIcon
+                  name: tektonIcon
                 dynamicRoutes:
-                  - path: /tekton
-                    importName: TektonPage
-                    menuItem:
-                      icon: tektonIcon
-                      text: Tekton CI
-      
-      # Kubernetes Plugin - Backend
-      - package: './dynamic-plugins/dist/backstage-plugin-kubernetes-backend-dynamic'
-        disabled: false
+                - importName: TektonPage
+                  menuItem:
+                    icon: tektonIcon
+                    text: Tekton CI
+                  path: /tekton
       
       # Kubernetes Plugin - Frontend
       - package: './dynamic-plugins/dist/backstage-plugin-kubernetes'
@@ -66,9 +91,73 @@ data:
             frontend:
               backstage.plugin-kubernetes:
                 dynamicRoutes:
-                  - path: /kubernetes
-                    importName: KubernetesPage
-                    menuItem:
-                      icon: kubernetes
-                      text: Kubernetes
-
+                - importName: KubernetesPage
+                  menuItem:
+                    icon: kubernetes
+                    text: Kubernetes
+                  path: /kubernetes
+      
+      # GitHub Scaffolder Backend Module - Enable publish:github action
+      - package: './dynamic-plugins/dist/backstage-plugin-scaffolder-backend-module-github-dynamic'
+        disabled: false
+      
+      # ArgoCD Scaffolder Backend Module - Enable argocd:create-resources action
+      - package: './dynamic-plugins/dist/roadiehq-scaffolder-backend-argocd-dynamic'
+        disabled: false
+      
+      # Orchestrator Scaffolder Backend Module (disabled by default)
+      - package: '@redhat/backstage-plugin-scaffolder-backend-module-orchestrator-dynamic@1.8.2'
+        integrity: sha512-N2hCn9RI/QVEoK56FAkGkSDbvfQCOIzVsJTwDX0kf//npO++2crRSJpB1Lr/m2UtYxfaXZX53p8sPcK3g8yWkQ==
+        disabled: true
+        pluginConfig:
+          orchestrator:
+            dataIndexService:
+              url: http://sonataflow-platform-data-index-service
+      
+      # Orchestrator Form Widgets (disabled by default)
+      - package: '@redhat/backstage-plugin-orchestrator-form-widgets@1.8.2'
+        integrity: sha512-Pe0dn3g+YTK3jbl36E8nt4zdyH/3w+MWgRyFWPc2B0eV4/L/aRfRC4KxcktmHPdamRGXTIaXL6cFae8TZl8Htw==
+        disabled: true
+        pluginConfig:
+          dynamicPlugins:
+            frontend:
+              red-hat-developer-hub.backstage-plugin-orchestrator-form-widgets: {}
+      
+      # ArgoCD Plugin - Backend (local path)
+      - package: './dynamic-plugins/dist/roadiehq-backstage-plugin-argo-cd-backend-dynamic'
+        disabled: false
+      
+      # ArgoCD Plugin - Frontend (Red Hat Community Plugin - local path)
+      - package: './dynamic-plugins/dist/backstage-community-plugin-redhat-argocd'
+        disabled: false
+        pluginConfig:
+          dynamicPlugins:
+            frontend:
+              backstage-community.plugin-redhat-argocd:
+                appIcons:
+                - module: ArgocdIcon
+                  name: argocdIcon
+                dynamicRoutes:
+                - importName: ArgocdPage
+                  menuItem:
+                    icon: argocdIcon
+                    text: ArgoCD
+                  path: /argo-cd
+      
+      # Topology Plugin
+      - package: './dynamic-plugins/dist/backstage-community-plugin-topology'
+        disabled: false
+        pluginConfig:
+          dynamicPlugins:
+            frontend:
+              backstage-community.plugin-topology:
+                dynamicRoutes:
+                - importName: TopologyPage
+                  menuItem:
+                    icon: accountTree
+                    text: Topology
+                  path: /topology
+      
+      # Kubernetes Plugin - Backend
+      - package: './dynamic-plugins/dist/backstage-plugin-kubernetes-backend-dynamic'
+        disabled: false
