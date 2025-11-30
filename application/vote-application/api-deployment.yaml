@@ -22,8 +22,7 @@ spec:
         app: vote-api
     spec:
       containers:
-      - image: quay.io/sureshgaikwad/app:v1
-#      - image: quay.io/sureshgaikwad/vote-api:latest
+      - image: quay.io/sureshgaikwad/vote-api:latest
         imagePullPolicy: Always
         name: vote-api
         ports:
