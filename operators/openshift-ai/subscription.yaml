@@ -6,7 +6,7 @@ metadata:
   annotations:
     argocd.argoproj.io/sync-wave: "0"
 spec:
-  channel: stable
+  channel: fast
   name: rhods-operator
   source: redhat-operators
   sourceNamespace: openshift-marketplace
