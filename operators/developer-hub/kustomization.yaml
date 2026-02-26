@@ -3,12 +3,12 @@ kind: Kustomization
 
 namespace: demo-project
 
+# Resources live under base/ so paths are base/<file>
 resources:
-  - demo-project-namespace.yaml
-  - pvc-dynamic-plugins.yaml
-  - auth-secret.yaml
-  - app-config.yaml
-  - dynamic-plugins.yaml
-  - user-entities.yaml
-  - rbac.yaml
-  - backstage-instance.yaml
+  - base/demo-project-namespace.yaml
+  - base/pvc-dynamic-plugins.yaml
+  - base/app-config.yaml
+  - base/dynamic-plugins.yaml
+  - base/user-entities.yaml
+  - base/rbac.yaml
+  - base/backstage-instance.yaml
