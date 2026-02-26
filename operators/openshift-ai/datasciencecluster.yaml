@@ -1,4 +1,4 @@
-apiVersion: datasciencecluster.opendatahub.io/v1
+apiVersion: datasciencecluster.opendatahub.io/v2
 kind: DataScienceCluster
 metadata:
   name: default-dsc
@@ -13,40 +13,33 @@ metadata:
     argocd.argoproj.io/sync-options: SkipDryRunOnMissingResource=true
 spec:
   components:
-    codeflare:
+    dashboard:
+      managementState: Managed
+    aipipelines:
       managementState: Managed
     kserve:
+      managementState: Managed
+      rawDeploymentServiceConfig: Headless
       nim:
         managementState: Managed
-      rawDeploymentServiceConfig: Headless
-      serving:
-        ingressGateway:
-          certificate:
-            type: OpenshiftDefaultIngress
-        managementState: Managed
-        name: knative-serving
-      managementState: Managed
     modelregistry:
-      registriesNamespace: rhoai-model-registries
       managementState: Managed
+      registriesNamespace: rhoai-model-registries
     feastoperator:
       managementState: Removed
     trustyai:
       managementState: Managed
     ray:
       managementState: Managed
+    # In v2, kueue only allows Unmanaged or Removed (Managed no longer supported)
     kueue:
-      managementState: Managed
+      managementState: Unmanaged
     workbenches:
+      managementState: Managed
       workbenchNamespace: rhods-notebooks
-      managementState: Managed
-    dashboard:
-      managementState: Managed
-    modelmeshserving:
-      managementState: Managed
     llamastackoperator:
       managementState: Managed
-    datasciencepipelines:
-      managementState: Managed
     trainingoperator:
+      managementState: Managed
+    trainer:
       managementState: Managed
