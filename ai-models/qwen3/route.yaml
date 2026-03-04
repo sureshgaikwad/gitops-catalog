@@ -1,0 +1,12 @@
+apiVersion: route.openshift.io/v1
+kind: Route
+metadata:
+  name: qwen3-8b-fp8-dynamic
+spec:
+  to:
+    kind: Service
+    name: qwen3-8b-fp8-dynamic-predictor
+  port:
+    targetPort: http
+  tls:
+    termination: edge
