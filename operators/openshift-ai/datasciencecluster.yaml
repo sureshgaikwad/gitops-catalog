@@ -32,7 +32,7 @@ spec:
     ray:
       managementState: Managed
     kueue:
-      managementState: Managed
+      managementState: Unmanaged
     workbenches:
       managementState: Managed
       workbenchNamespace: rhods-notebooks
