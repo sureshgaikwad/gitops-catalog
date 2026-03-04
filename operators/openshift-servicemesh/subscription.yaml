@@ -5,7 +5,16 @@ metadata:
   namespace: openshift-operators
 spec:
   channel: stable
+  config:
+    annotations:
+      openshift.io/required-scc: restricted-v2
+      target.workload.openshift.io/management: '{"effect": "PreferredDuringScheduling"}'
+    resources:
+      requests:
+        cpu: 10m
+        memory: 64Mi
+  name: servicemeshoperator3
   installPlanApproval: Automatic
-  name: servicemeshoperator
   source: redhat-operators
   sourceNamespace: openshift-marketplace
+  startingCSV: servicemeshoperator3.v3.2.0
