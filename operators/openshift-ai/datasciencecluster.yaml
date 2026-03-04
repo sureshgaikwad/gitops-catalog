@@ -31,9 +31,8 @@ spec:
       managementState: Managed
     ray:
       managementState: Managed
-    # In v2, kueue only allows Unmanaged or Removed (Managed no longer supported)
     kueue:
-      managementState: Unmanaged
+      managementState: Managed
     workbenches:
       managementState: Managed
       workbenchNamespace: rhods-notebooks
