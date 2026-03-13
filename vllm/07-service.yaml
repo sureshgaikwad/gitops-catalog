@@ -1,0 +1,20 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: semantic-router-kserve
+  namespace: models
+  labels:
+    app: semantic-router
+    component: gateway
+spec:
+  type: ClusterIP
+  selector:
+    app: semantic-router
+    component: gateway
+  ports:
+    - name: envoy-http
+      port: 80
+      targetPort: 8801
+    - name: classify-api
+      port: 8080
+      targetPort: 8080

@@ -18,12 +18,12 @@ spec:
     providers:
       - name: red_hat_openshift_ai
         type: rhoai_vllm
-        url: "http://mistral-small-24b-instruct-quantized-predictor.models.svc.cluster.local:8080/v1"
+        url: "http://qwen-25-7b-predictor.models.svc.cluster.local:8080/v1"
         credentialsSecretRef:
           name: rhoai-api-keys
         models:
-          - name: mistral-small-24b-instruct-quantized
-            url: "http://mistral-small-24b-instruct-quantized-predictor.models.svc.cluster.local:8080/v1"
+          - name: qwen-25-7b
+            url: "http://qwen-25-7b-predictor.models.svc.cluster.local:8080/v1"
   mcpServers:
   - name: cluster-health
     streamableHTTP:
@@ -33,5 +33,5 @@ spec:
       url: 'http://cluster-health-mcp-server.openshift-cluster-observability-operator.svc.cluster.local:8085/mcp'
   ols:
     defaultProvider: red_hat_openshift_ai
-    defaultModel: mistral-small-24b-instruct-quantized
+    defaultModel: qwen-25-7b
     logLevel: INFO

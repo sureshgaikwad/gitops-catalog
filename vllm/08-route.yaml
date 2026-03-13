@@ -1,0 +1,19 @@
+apiVersion: route.openshift.io/v1
+kind: Route
+metadata:
+  name: semantic-router-kserve
+  namespace: models
+  labels:
+    app: semantic-router
+    component: gateway
+spec:
+  to:
+    kind: Service
+    name: semantic-router-kserve
+    weight: 100
+  port:
+    targetPort: envoy-http
+  tls:
+    termination: edge
+    insecureEdgeTerminationPolicy: Redirect
+  wildcardPolicy: None
