@@ -1,10 +1,10 @@
 apiVersion: serving.kserve.io/v1alpha1
 kind: ServingRuntime
 metadata:
-  name: vllm-cuda-runtime-qwen
+  name: vllm-cuda-runtime-phi3
   namespace: models
   annotations:
-    openshift.io/display-name: vLLM NVIDIA GPU ServingRuntime for Qwen
+    openshift.io/display-name: vLLM NVIDIA GPU ServingRuntime for Phi-3
     opendatahub.io/apiProtocol: REST
     opendatahub.io/recommended-accelerators: '["nvidia.com/gpu"]'
     opendatahub.io/runtime-version: v0.13.0
@@ -35,8 +35,6 @@ spec:
       env:
         - name: HF_HOME
           value: /tmp/hf_home
-        - name: PYTORCH_CUDA_ALLOC_CONF
-          value: expandable_segments:True
       ports:
         - containerPort: 8080
           protocol: TCP

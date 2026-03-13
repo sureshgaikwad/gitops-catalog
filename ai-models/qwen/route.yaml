@@ -1,12 +1,15 @@
 apiVersion: route.openshift.io/v1
 kind: Route
 metadata:
-  name: qwen3-coder-480b-a35b-instruct-fp8
+  name: qwen-25-7b
+  namespace: models
+  annotations:
+    argocd.argoproj.io/sync-wave: "2"
 spec:
   to:
     kind: Service
-    name: qwen3-coder-480b-a35b-instruct-fp8-predictor
+    name: qwen-25-7b-predictor
   port:
-    targetPort: 8080
+    targetPort: http
   tls:
     termination: edge

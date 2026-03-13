@@ -1,11 +1,14 @@
 apiVersion: route.openshift.io/v1
 kind: Route
 metadata:
-  name: qwen3-8b-fp8-dynamic
+  name: phi-3-mini-chat-route
+  namespace: models
+  annotations:
+    argocd.argoproj.io/sync-wave: "2"
 spec:
   to:
     kind: Service
-    name: qwen3-8b-fp8-dynamic-predictor
+    name: phi-3-mini-chat-predictor
   port:
     targetPort: http
   tls:

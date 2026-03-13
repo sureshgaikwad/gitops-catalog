@@ -1,10 +1,10 @@
 apiVersion: serving.kserve.io/v1beta1
 kind: InferenceService
 metadata:
-  name: qwen-25-7b
+  name: phi-3-mini-chat
   namespace: models
   annotations:
-    openshift.io/display-name: qwen-2.5-7b-instruct
+    openshift.io/display-name: phi-3-mini-chat
     serving.kserve.io/deploymentMode: RawDeployment
     security.opendatahub.io/enable-auth: "false"
     networking.kserve.io/visibility: exposed
@@ -20,17 +20,19 @@ spec:
       name: ""
       resources:
         limits:
-          cpu: "4"
-          memory: 16Gi
+          cpu: "2"
+          memory: 6Gi
           nvidia.com/gpu: "1"
         requests:
-          cpu: "2"
-          memory: 12Gi
+          cpu: "1"
+          memory: 4Gi
           nvidia.com/gpu: "1"
-      runtime: vllm-cuda-runtime-qwen
-      storageUri: hf://Qwen/Qwen2.5-7B-Instruct
+      runtime: vllm-cuda-runtime-phi3
+      storageUri: hf://microsoft/Phi-3-mini-128k-instruct
       args:
         - --max-model-len
-        - "20000"
+        - "8192"
         - --gpu-memory-utilization
         - "0.90"
+        - --max-num-seqs
+        - "2"
