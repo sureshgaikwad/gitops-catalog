@@ -128,8 +128,9 @@ data:
         disabled: false
       
       # ArgoCD Plugin - Frontend (Red Hat Community Plugin - local path)
+      # Disabled: install script currently fails on npm pack for this plugin image.
       - package: './dynamic-plugins/dist/backstage-community-plugin-redhat-argocd'
-        disabled: false
+        disabled: true
         pluginConfig:
           dynamicPlugins:
             frontend:
