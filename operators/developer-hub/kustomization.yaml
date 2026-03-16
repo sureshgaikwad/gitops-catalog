@@ -4,10 +4,11 @@ kind: Kustomization
 namespace: demo-project
 
 # Resources live under base/ so paths are base/<file>
+# Note: developer-hub-app-config ConfigMap is NOT listed here - it is generated
+# by Terraform (gitops-template-processor) and applied directly to the cluster.
 resources:
   - base/demo-project-namespace.yaml
   - base/pvc-dynamic-plugins.yaml
-  - base/app-config.yaml
   - base/dynamic-plugins.yaml
   - base/user-entities.yaml
   - base/rbac.yaml
