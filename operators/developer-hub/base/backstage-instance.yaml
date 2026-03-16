@@ -1,5 +1,5 @@
 ---
-apiVersion: rhdh.redhat.com/v1alpha3
+apiVersion: rhdh.redhat.com/v1alpha5
 kind: Backstage
 metadata:
   name: developer-hub
@@ -30,8 +30,6 @@ spec:
       configMaps:
         - name: backstage-user-entities
           key: user-entities.yaml
-    # Number of replicas (keep at 1 to avoid migration lock issues)
-    replicas: 1
     # Enable route
     route:
       enabled: true
@@ -60,6 +58,11 @@ spec:
     patch:
       spec:
         replicas: 1
+        strategy:
+          type: RollingUpdate
+          rollingUpdate:
+            maxSurge: 0
+            maxUnavailable: 1
         template:
           spec:
             # Add volume for dynamic plugins caching (best practice from training exercises)
@@ -69,3 +72,5 @@ spec:
                 name: dynamic-plugins-root
                 persistentVolumeClaim:
                   claimName: dynamic-plugins-root
+  monitoring:
+    enabled: false
