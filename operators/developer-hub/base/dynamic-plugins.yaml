@@ -18,11 +18,11 @@ data:
     plugins:
       # GitHub Catalog Backend Module - Catalog Discovery
       - package: './dynamic-plugins/dist/backstage-plugin-catalog-backend-module-github-dynamic'
-        disabled: false
+        disabled: true
       
       # GitHub Org Catalog Backend Module - Organization Data
       - package: './dynamic-plugins/dist/backstage-plugin-catalog-backend-module-github-org-dynamic'
-        disabled: false
+        disabled: true
       
       # Orchestrator Plugin (disabled by default - enable if SonataFlow is deployed)
       - package: '@redhat/backstage-plugin-orchestrator@1.8.2'
@@ -128,7 +128,6 @@ data:
         disabled: false
       
       # ArgoCD Plugin - Frontend (Red Hat Community Plugin - local path)
-      # Disabled: install script currently fails on npm pack for this plugin image.
       - package: './dynamic-plugins/dist/backstage-community-plugin-redhat-argocd'
         disabled: true
         pluginConfig:
