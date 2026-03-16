@@ -2,6 +2,7 @@ apiVersion: operator.openshift.io/v1
 kind: JobSetOperator
 metadata:
   name: cluster
+  namespace: openshift-jobset-operator
   annotations:
     argocd.argoproj.io/sync-wave: "1"
     argocd.argoproj.io/sync-options: SkipDryRunOnMissingResource=true
