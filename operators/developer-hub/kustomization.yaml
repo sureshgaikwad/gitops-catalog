@@ -11,3 +11,5 @@ resources:
   - base/user-entities.yaml
   - base/rbac.yaml
   - base/backstage-instance.yaml
+  - base/operatorgroup.yaml
+  - base/rhdh-operator-clusterwide.yaml
