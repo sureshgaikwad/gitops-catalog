@@ -6,10 +6,10 @@ kind: Kustomization
 # by Terraform (gitops-template-processor) and applied directly to the cluster.
 resources:
   - base/demo-project-namespace.yaml
+  - base/operatorgroup.yaml
+  - base/rhdh-operator-clusterwide.yaml
   - base/pvc-dynamic-plugins.yaml
   - base/dynamic-plugins.yaml
   - base/user-entities.yaml
   - base/rbac.yaml
   - base/backstage-instance.yaml
-  - base/operatorgroup.yaml
-  - base/rhdh-operator-clusterwide.yaml
