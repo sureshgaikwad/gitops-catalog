@@ -26,7 +26,7 @@ spec:
       resources:
         limits:
           cpu: "2800m"
-          memory: 16Gi
+          memory: 12Gi
           nvidia.com/gpu: "1"
         requests:
           cpu: "2"
