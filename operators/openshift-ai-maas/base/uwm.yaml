@@ -1,0 +1,11 @@
+# Enable User Workload Monitoring so served-model metrics are scraped.
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: cluster-monitoring-config
+  namespace: openshift-monitoring
+  annotations:
+    argocd.argoproj.io/sync-wave: "1"
+data:
+  config.yaml: |
+    enableUserWorkload: true

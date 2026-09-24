@@ -1,0 +1,13 @@
+apiVersion: kustomize.config.k8s.io/v1alpha1
+kind: Component
+
+# Enable Models-as-a-Service only after RHCL + maas-default-gateway exist.
+patches:
+  - target:
+      group: datasciencecluster.opendatahub.io
+      kind: DataScienceCluster
+      name: default-dsc
+    patch: |-
+      - op: replace
+        path: /spec/components/aigateway/modelsAsAService/managementState
+        value: Managed

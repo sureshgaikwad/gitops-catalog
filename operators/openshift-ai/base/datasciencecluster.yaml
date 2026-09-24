@@ -22,6 +22,12 @@ spec:
       rawDeploymentServiceConfig: Headless
       nim:
         managementState: Managed
+    # AI Gateway is Managed at install; Models-as-a-Service stays Removed until
+    # RHCL + maas-default-gateway are ready (enable via components/maas-enable).
+    aigateway:
+      managementState: Managed
+      modelsAsAService:
+        managementState: Removed
     modelregistry:
       managementState: Managed
       registriesNamespace: rhoai-model-registries
@@ -36,8 +42,12 @@ spec:
     workbenches:
       managementState: Managed
       workbenchNamespace: rhods-notebooks
+    # Gen AI backend is mutually exclusive: enable exactly one of
+    # components/genai-ogx or components/llamastack via Argo/TF.
     llamastackoperator:
-      managementState: Managed
+      managementState: Removed
+    ogx:
+      managementState: Removed
     trainingoperator:
       managementState: Managed
     trainer:

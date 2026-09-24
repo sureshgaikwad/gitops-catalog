@@ -1,0 +1,19 @@
+# Make Authorino trust the OpenShift service-serving CA so MaaS auth callouts succeed.
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: authorino-trusted-ca-bundle
+  namespace: kuadrant-system
+  annotations:
+    argocd.argoproj.io/sync-wave: "2"
+  labels:
+    config.openshift.io/inject-trusted-cabundle: "true"
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: authorino-service-ca
+  namespace: kuadrant-system
+  annotations:
+    argocd.argoproj.io/sync-wave: "2"
+    service.beta.openshift.io/inject-cabundle: "true"

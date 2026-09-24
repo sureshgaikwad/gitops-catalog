@@ -1,0 +1,75 @@
+# Optional PostSync helper: mount service-CA trust into Authorino after Kuadrant creates it.
+# Safe to re-run; no-ops if Authorino is not yet present (Argo retries sync).
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: rhcl-authorino-trust-patcher
+  namespace: kuadrant-system
+  annotations:
+    argocd.argoproj.io/sync-wave: "3"
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: rhcl-authorino-trust-patcher
+  namespace: kuadrant-system
+  annotations:
+    argocd.argoproj.io/sync-wave: "3"
+rules:
+  - apiGroups: ["operator.authorino.kuadrant.io", "authorino.kuadrant.io"]
+    resources: ["authorinos"]
+    verbs: ["get", "list", "patch", "update"]
+  - apiGroups: ["apps"]
+    resources: ["deployments"]
+    verbs: ["get", "list", "patch"]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: rhcl-authorino-trust-patcher
+  namespace: kuadrant-system
+  annotations:
+    argocd.argoproj.io/sync-wave: "3"
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: rhcl-authorino-trust-patcher
+subjects:
+  - kind: ServiceAccount
+    name: rhcl-authorino-trust-patcher
+    namespace: kuadrant-system
+---
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: patch-authorino-service-ca-trust
+  namespace: kuadrant-system
+  annotations:
+    argocd.argoproj.io/sync-wave: "4"
+    argocd.argoproj.io/hook: Sync
+    argocd.argoproj.io/hook-delete-policy: BeforeHookCreation
+spec:
+  ttlSecondsAfterFinished: 300
+  backoffLimit: 6
+  template:
+    spec:
+      serviceAccountName: rhcl-authorino-trust-patcher
+      restartPolicy: OnFailure
+      containers:
+        - name: patch
+          image: registry.redhat.io/openshift4/ose-cli:latest
+          command:
+            - /bin/bash
+            - -c
+            - |
+              set -euo pipefail
+              for i in $(seq 1 30); do
+                if oc get authorino authorino -n kuadrant-system >/dev/null 2>&1; then
+                  break
+                fi
+                sleep 10
+              done
+              oc get authorino authorino -n kuadrant-system >/dev/null
+              oc patch authorino authorino -n kuadrant-system --type=merge -p \
+                '{"spec":{"volumes":{"items":[{"name":"ca-trust","mountPath":"/etc/pki/tls/certs","configMaps":["authorino-trusted-ca-bundle","authorino-service-ca"]}]}}}'
+              echo "Authorino service-CA trust volumes patched"

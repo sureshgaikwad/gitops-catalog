@@ -1,0 +1,142 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+resources:
+  - params-configmap.yaml
+  - llminferenceservice.yaml
+  - maas-governance.yaml
+
+replacements:
+  - source:
+      kind: ConfigMap
+      name: rhoai-llmd-params
+      fieldPath: data.modelName
+    targets:
+      - select:
+          kind: LLMInferenceService
+        fieldPaths:
+          - metadata.name
+        options:
+          create: true
+      - select:
+          kind: MaaSModelRef
+        fieldPaths:
+          - metadata.name
+          - spec.modelRef.name
+        options:
+          create: true
+      - select:
+          kind: MaaSSubscription
+        fieldPaths:
+          - spec.modelRefs.0.name
+        options:
+          create: true
+      - select:
+          kind: MaaSAuthPolicy
+        fieldPaths:
+          - spec.modelRefs.0.name
+        options:
+          create: true
+  - source:
+      kind: ConfigMap
+      name: rhoai-llmd-params
+      fieldPath: data.modelNamespace
+    targets:
+      - select:
+          kind: LLMInferenceService
+        fieldPaths:
+          - metadata.namespace
+        options:
+          create: true
+      - select:
+          kind: MaaSModelRef
+        fieldPaths:
+          - metadata.namespace
+        options:
+          create: true
+      - select:
+          kind: ConfigMap
+          name: rhoai-llmd-params
+        fieldPaths:
+          - metadata.namespace
+        options:
+          create: true
+      - select:
+          kind: MaaSSubscription
+        fieldPaths:
+          - spec.modelRefs.0.namespace
+        options:
+          create: true
+      - select:
+          kind: MaaSAuthPolicy
+        fieldPaths:
+          - spec.modelRefs.0.namespace
+        options:
+          create: true
+  - source:
+      kind: ConfigMap
+      name: rhoai-llmd-params
+      fieldPath: data.modelDisplayName
+    targets:
+      - select:
+          kind: LLMInferenceService
+        fieldPaths:
+          - spec.model.name
+  - source:
+      kind: ConfigMap
+      name: rhoai-llmd-params
+      fieldPath: data.modelOciUri
+    targets:
+      - select:
+          kind: LLMInferenceService
+        fieldPaths:
+          - spec.model.uri
+  - source:
+      kind: ConfigMap
+      name: rhoai-llmd-params
+      fieldPath: data.vllmImage
+    targets:
+      - select:
+          kind: LLMInferenceService
+        fieldPaths:
+          - spec.template.containers.0.image
+  - source:
+      kind: ConfigMap
+      name: rhoai-llmd-params
+      fieldPath: data.gatewayName
+    targets:
+      - select:
+          kind: LLMInferenceService
+        fieldPaths:
+          - spec.router.gateway.refs.0.name
+  - source:
+      kind: ConfigMap
+      name: rhoai-llmd-params
+      fieldPath: data.gatewayNamespace
+    targets:
+      - select:
+          kind: LLMInferenceService
+        fieldPaths:
+          - spec.router.gateway.refs.0.namespace
+  - source:
+      kind: ConfigMap
+      name: rhoai-llmd-params
+      fieldPath: data.ownerGroup
+    targets:
+      - select:
+          kind: MaaSSubscription
+        fieldPaths:
+          - spec.owner.groups.0.name
+      - select:
+          kind: MaaSAuthPolicy
+        fieldPaths:
+          - spec.subjects.groups.0.name
+  - source:
+      kind: ConfigMap
+      name: rhoai-llmd-params
+      fieldPath: data.tokenRateWindow
+    targets:
+      - select:
+          kind: MaaSSubscription
+        fieldPaths:
+          - spec.modelRefs.0.tokenRateLimits.0.window

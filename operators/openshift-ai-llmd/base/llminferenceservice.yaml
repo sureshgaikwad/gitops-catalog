@@ -1,0 +1,50 @@
+apiVersion: serving.kserve.io/v1alpha1
+kind: LLMInferenceService
+metadata:
+  name: qwen25-05b-llmd
+  namespace: rhoai-deploy
+  annotations:
+    argocd.argoproj.io/sync-wave: "1"
+    argocd.argoproj.io/sync-options: SkipDryRunOnMissingResource=true
+    prometheus.io/scrape: "true"
+    prometheus.io/port: "8000"
+    prometheus.io/path: "/metrics"
+  labels:
+    app.kubernetes.io/part-of: llm-d
+    opendatahub.io/dashboard: "true"
+spec:
+  model:
+    uri: "oci://quay.io/redhat-ai-services/modelcar-catalog:qwen2.5-0.5b-instruct"
+    name: qwen25-05b-llmd
+  # replicas intentionally omitted so KEDA can own the Deployment replica count.
+  router:
+    scheduler: {}
+    route: {}
+    gateway:
+      refs:
+        - name: maas-default-gateway
+          namespace: openshift-ingress
+  template:
+    containers:
+      - name: main
+        image: registry.redhat.io/rhaii/vllm-cpu-rhel9:latest
+        args:
+          - "--dtype=bfloat16"
+          - "--max-model-len=8192"
+          - "--max-num-seqs=8"
+          - "--enable-force-include-usage"
+          - "--enforce-eager"
+        env:
+          - name: VLLM_CPU_KVCACHE_SPACE
+            value: "2"
+          - name: OMP_NUM_THREADS
+            value: "4"
+          - name: VLLM_CPU_OMP_THREADS_BIND
+            value: "0-3"
+        resources:
+          requests:
+            cpu: "1"
+            memory: 2Gi
+          limits:
+            cpu: "4"
+            memory: 8Gi

@@ -1,0 +1,54 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+resources:
+  - params-configmap.yaml
+  - namespace.yaml
+  - postgres.yaml
+  - uwm.yaml
+  - gateway.yaml
+  - telemetry.yaml
+
+# Wire params ConfigMap into Gateway / postgres without embedding cluster values in git.
+# Override rhoai-maas-params via Argo CD kustomize patches (Terraform rhoai_maas_* vars).
+replacements:
+  - source:
+      kind: ConfigMap
+      name: rhoai-maas-params
+      fieldPath: data.maasHostname
+    targets:
+      - select:
+          kind: Gateway
+          name: maas-default-gateway
+        fieldPaths:
+          - spec.listeners.[name=https].hostname
+  - source:
+      kind: ConfigMap
+      name: rhoai-maas-params
+      fieldPath: data.tlsSecretName
+    targets:
+      - select:
+          kind: Gateway
+          name: maas-default-gateway
+        fieldPaths:
+          - spec.listeners.[name=https].tls.certificateRefs.0.name
+  - source:
+      kind: ConfigMap
+      name: rhoai-maas-params
+      fieldPath: data.postgresStorageSize
+    targets:
+      - select:
+          kind: PersistentVolumeClaim
+          name: postgres-data
+        fieldPaths:
+          - spec.resources.requests.storage
+  - source:
+      kind: ConfigMap
+      name: rhoai-maas-params
+      fieldPath: data.postgresImage
+    targets:
+      - select:
+          kind: Deployment
+          name: postgres
+        fieldPaths:
+          - spec.template.spec.containers.0.image

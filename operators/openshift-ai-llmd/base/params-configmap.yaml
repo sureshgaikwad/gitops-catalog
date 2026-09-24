@@ -1,0 +1,31 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: rhoai-llmd-params
+  namespace: rhoai-deploy
+  annotations:
+    argocd.argoproj.io/sync-wave: "0"
+data:
+  modelName: "qwen25-05b-llmd"
+  modelNamespace: "rhoai-deploy"
+  modelDisplayName: "qwen25-05b-llmd"
+  modelOciUri: "oci://quay.io/redhat-ai-services/modelcar-catalog:qwen2.5-0.5b-instruct"
+  vllmImage: "registry.redhat.io/rhaii/vllm-cpu-rhel9:latest"
+  gatewayName: "maas-default-gateway"
+  gatewayNamespace: "openshift-ingress"
+  maasSubscriptionNamespace: "models-as-a-service"
+  ownerGroup: "system:authenticated:oauth"
+  tokenRateLimit: "5000000"
+  tokenRateWindow: "1m"
+  cpuRequest: "1"
+  cpuLimit: "4"
+  memoryRequest: "2Gi"
+  memoryLimit: "8Gi"
+  maxModelLen: "8192"
+  ompNumThreads: "4"
+  kedaMinReplicas: "1"
+  kedaMaxReplicas: "4"
+  kedaThreshold: "5"
+  kedaPollingInterval: "15"
+  kedaCooldownPeriod: "60"
+  thanosAddress: "https://thanos-querier.openshift-monitoring.svc.cluster.local:9091"

@@ -1,0 +1,31 @@
+# Deployer-overridable parameters. Patch this ConfigMap via Argo CD kustomize
+# (Terraform rhoai_maas_* variables) — do not commit cluster-specific values.
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: rhoai-maas-params
+  namespace: redhat-ods-applications
+  annotations:
+    argocd.argoproj.io/sync-wave: "0"
+data:
+  maasHostname: "maas.CHANGE_ME_CLUSTER_DOMAIN"
+  tlsSecretName: "cert-manager-ingress-cert"
+  modelName: "qwen25-05b-maas"
+  modelNamespace: "rhoai-deploy"
+  modelDisplayName: "qwen25-05b"
+  modelOciUri: "oci://quay.io/redhat-ai-services/modelcar-catalog:qwen2.5-0.5b-instruct"
+  vllmImage: "registry.redhat.io/rhaii/vllm-cpu-rhel9:latest"
+  postgresStorageSize: "5Gi"
+  postgresImage: "registry.redhat.io/rhel9/postgresql-15:latest"
+  tokenRateLimit: "100"
+  tokenRateWindow: "1m"
+  cpuRequest: "1"
+  cpuLimit: "4"
+  memoryRequest: "2Gi"
+  memoryLimit: "8Gi"
+  maxModelLen: "8192"
+  ompNumThreads: "4"
+  gatewayName: "maas-default-gateway"
+  gatewayNamespace: "openshift-ingress"
+  maasSubscriptionNamespace: "models-as-a-service"
+  ownerGroup: "system:authenticated:oauth"

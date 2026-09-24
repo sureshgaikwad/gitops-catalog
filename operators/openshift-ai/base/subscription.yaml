@@ -6,7 +6,8 @@ metadata:
   annotations:
     argocd.argoproj.io/sync-wave: "0"
 spec:
-  channel: fast-3.x
+  # Default channel for RHOAI 3.5. Override via Argo CD kustomize patches / TF vars.
+  channel: stable-3.5
   name: rhods-operator
   source: redhat-operators
   sourceNamespace: openshift-marketplace

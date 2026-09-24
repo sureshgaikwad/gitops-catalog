@@ -1,0 +1,36 @@
+apiVersion: kustomize.config.k8s.io/v1alpha1
+kind: Component
+
+resources:
+  - scaledobject.yaml
+
+replacements:
+  - source:
+      kind: ConfigMap
+      name: rhoai-llmd-params
+      fieldPath: data.modelNamespace
+    targets:
+      - select:
+          kind: ScaledObject
+        fieldPaths:
+          - metadata.namespace
+        options:
+          create: true
+  - source:
+      kind: ConfigMap
+      name: rhoai-llmd-params
+      fieldPath: data.thanosAddress
+    targets:
+      - select:
+          kind: ScaledObject
+        fieldPaths:
+          - spec.triggers.0.metadata.serverAddress
+  - source:
+      kind: ConfigMap
+      name: rhoai-llmd-params
+      fieldPath: data.kedaThreshold
+    targets:
+      - select:
+          kind: ScaledObject
+        fieldPaths:
+          - spec.triggers.0.metadata.threshold
