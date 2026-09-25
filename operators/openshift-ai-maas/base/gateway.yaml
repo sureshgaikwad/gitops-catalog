@@ -29,7 +29,9 @@ spec:
   gatewayClassName: openshift-default
   listeners:
     - name: https
-      hostname: "maas.CHANGE_ME_CLUSTER_DOMAIN"
+      # Placeholder must be a valid DNS hostname (Gateway API validation).
+      # Overridden at sync time via Argo CD JSON6902 patch (Terraform rhoai_maas_hostname).
+      hostname: "maas.example.com"
       port: 443
       protocol: HTTPS
       allowedRoutes:

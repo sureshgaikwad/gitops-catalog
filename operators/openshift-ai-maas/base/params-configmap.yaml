@@ -8,7 +8,7 @@ metadata:
   annotations:
     argocd.argoproj.io/sync-wave: "0"
 data:
-  maasHostname: "maas.CHANGE_ME_CLUSTER_DOMAIN"
+  maasHostname: "maas.example.com"
   tlsSecretName: "cert-manager-ingress-cert"
   modelName: "qwen25-05b-maas"
   modelNamespace: "rhoai-deploy"
