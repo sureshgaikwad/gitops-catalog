@@ -6,8 +6,12 @@ resources:
   - namespace.yaml
   - postgres.yaml
   - uwm.yaml
+  # ROSA/cloud: LoadBalancer Gateway (maas-default-gateway in openshift-ingress)
   - gateway.yaml
   - telemetry.yaml
+  - telemetrypolicy.yaml
+  - dashboard-config.yaml
+  - perses-global-datasource.yaml
 
 # Wire params ConfigMap into Gateway / postgres without embedding cluster values in git.
 # Override rhoai-maas-params via Argo CD kustomize patches (Terraform rhoai_maas_* vars).

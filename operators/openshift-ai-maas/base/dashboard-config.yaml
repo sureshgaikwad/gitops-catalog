@@ -1,0 +1,17 @@
+# Enables MaaS + Gen AI + Observability views in the RHOAI dashboard.
+# Applied with ServerSideApply so it merges onto the operator-managed
+# OdhDashboardConfig once that CR exists.
+apiVersion: opendatahub.io/v1alpha
+kind: OdhDashboardConfig
+metadata:
+  name: odh-dashboard-config
+  namespace: redhat-ods-applications
+  annotations:
+    argocd.argoproj.io/sync-wave: "3"
+    argocd.argoproj.io/sync-options: SkipDryRunOnMissingResource=true,ServerSideApply=true
+spec:
+  dashboardConfig:
+    modelAsService: true
+    observabilityDashboard: true
+    genAiStudio: true
+    enablement: true

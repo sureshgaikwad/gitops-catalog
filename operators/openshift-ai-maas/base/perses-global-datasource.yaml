@@ -1,0 +1,24 @@
+# RHOAI 3.5: PersesGlobalDatasource so the Usage dashboard tab
+# (redhat-ods-applications) can resolve data-science-prometheus-datasource.
+apiVersion: perses.dev/v1alpha2
+kind: PersesGlobalDatasource
+metadata:
+  name: data-science-prometheus-datasource
+  annotations:
+    argocd.argoproj.io/sync-wave: "4"
+    argocd.argoproj.io/sync-options: SkipDryRunOnMissingResource=true
+  labels:
+    platform.opendatahub.io/part-of: monitoring
+spec:
+  config:
+    default: false
+    display:
+      name: Data Science Prometheus
+      description: Data Science MonitoringStack Thanos Querier - provides DS workload metrics
+    plugin:
+      kind: PrometheusDatasource
+      spec:
+        proxy:
+          kind: HTTPProxy
+          spec:
+            url: http://thanos-querier-data-science-thanos-querier.redhat-ods-monitoring.svc.cluster.local:10902
