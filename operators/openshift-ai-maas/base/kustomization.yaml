@@ -12,6 +12,7 @@ resources:
   - telemetrypolicy.yaml
   - dashboard-config.yaml
   - perses-global-datasource.yaml
+  - mcp-catalog-sources.yaml
 
 # Wire params ConfigMap into Gateway / postgres without embedding cluster values in git.
 # Override rhoai-maas-params via Argo CD kustomize patches (Terraform rhoai_maas_* vars).

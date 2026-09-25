@@ -60,8 +60,8 @@ spec:
     apiVersion: apps/v1
     kind: Deployment
     name: qwen25-05b-llmd-kserve
-  minReplicaCount: 1
-  maxReplicaCount: 4
+  minReplicaCount: 0
+  maxReplicaCount: 2
   pollingInterval: 15
   cooldownPeriod: 60
   triggers:

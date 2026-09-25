@@ -1,0 +1,41 @@
+# Model-catalog ships MCP YAML under /shared-data; this ConfigMap enables them
+# in the AI Hub MCP Catalog UI. Managed with ServerSideApply so it merges onto
+# the operator-created ConfigMap without wiping other keys.
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: mcp-catalog-sources
+  namespace: rhoai-model-registries
+  labels:
+    app: model-catalog
+    app.kubernetes.io/component: model-catalog
+    app.kubernetes.io/name: model-catalog
+    component: model-catalog
+  annotations:
+    argocd.argoproj.io/sync-wave: "3"
+    argocd.argoproj.io/sync-options: SkipDryRunOnMissingResource=true,ServerSideApply=true
+data:
+  sources.yaml: |
+    mcp_catalogs:
+      - name: Red Hat MCP Servers
+        id: rh_mcp_servers
+        type: yaml
+        enabled: true
+        properties:
+          yamlCatalogPath: /shared-data/redhat-mcp-servers-catalog.yaml
+        labels:
+          - Red Hat
+      - name: Red Hat Partner MCP Servers
+        id: rh_partner_mcp_servers
+        type: yaml
+        enabled: true
+        properties:
+          yamlCatalogPath: /shared-data/partner-mcp-servers-catalog.yaml
+        labels:
+          - Red Hat Partners
+      - name: Community MCP Servers
+        id: community_mcp_servers
+        type: yaml
+        enabled: true
+        properties:
+          yamlCatalogPath: /shared-data/community-mcp-servers-catalog.yaml
