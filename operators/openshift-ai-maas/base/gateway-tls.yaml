@@ -1,0 +1,31 @@
+# Fallback TLS for MaaS Gateway when the cluster has no IngressController
+# defaultCertificate (or Terraform has not yet patched the Gateway to use it).
+# On ROSA HCP, Terraform overrides tlsSecretName to the primary-cert-bundle secret.
+apiVersion: cert-manager.io/v1
+kind: ClusterIssuer
+metadata:
+  name: maas-selfsigned-issuer
+  annotations:
+    argocd.argoproj.io/sync-wave: "1"
+    argocd.argoproj.io/sync-options: SkipDryRunOnMissingResource=true
+spec:
+  selfSigned: {}
+---
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: maas-gateway-tls
+  namespace: openshift-ingress
+  annotations:
+    argocd.argoproj.io/sync-wave: "1"
+    argocd.argoproj.io/sync-options: SkipDryRunOnMissingResource=true
+spec:
+  secretName: maas-gateway-tls
+  duration: 8760h
+  renewBefore: 720h
+  commonName: maas.example.com
+  dnsNames:
+    - maas.example.com
+  issuerRef:
+    name: maas-selfsigned-issuer
+    kind: ClusterIssuer

@@ -9,7 +9,7 @@ metadata:
     argocd.argoproj.io/sync-wave: "0"
 data:
   maasHostname: "maas.example.com"
-  tlsSecretName: "cert-manager-ingress-cert"
+  tlsSecretName: "maas-gateway-tls"
   modelName: "qwen25-05b-maas"
   modelNamespace: "rhoai-deploy"
   modelDisplayName: "qwen25-05b"

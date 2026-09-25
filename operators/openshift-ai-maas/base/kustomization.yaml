@@ -7,6 +7,7 @@ resources:
   - postgres.yaml
   - uwm.yaml
   # ROSA/cloud: LoadBalancer Gateway (maas-default-gateway in openshift-ingress)
+  - gateway-tls.yaml
   - gateway.yaml
   - telemetry.yaml
   - telemetrypolicy.yaml

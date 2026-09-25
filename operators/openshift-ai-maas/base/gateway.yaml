@@ -42,4 +42,4 @@ spec:
         certificateRefs:
           - group: ""
             kind: Secret
-            name: cert-manager-ingress-cert
+            name: maas-gateway-tls
