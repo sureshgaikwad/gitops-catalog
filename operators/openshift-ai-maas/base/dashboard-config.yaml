@@ -14,4 +14,6 @@ spec:
     modelAsService: true
     observabilityDashboard: true
     genAiStudio: true
+    # Technology Preview: AI Hub → MCP servers catalog + deploy action.
+    mcpCatalog: true
     enablement: true

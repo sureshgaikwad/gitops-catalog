@@ -48,7 +48,12 @@ spec:
       managementState: Removed
     ogx:
       managementState: Removed
-    trainingoperator:
-      managementState: Managed
     trainer:
+      managementState: Managed
+    # MCP Lifecycle Operator (Tech Preview): required for AI Hub → MCP servers
+    # catalog deploy actions. Catalog metadata ships with model-catalog; this
+    # component provides the runtime. Pair with OdhDashboardConfig.mcpCatalog.
+    mcplifecycleoperator:
+      managementState: Managed
+    trainingoperator:
       managementState: Managed

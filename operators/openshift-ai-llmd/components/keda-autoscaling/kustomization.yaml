@@ -28,6 +28,24 @@ replacements:
   - source:
       kind: ConfigMap
       name: rhoai-llmd-params
+      fieldPath: data.kedaMinReplicas
+    targets:
+      - select:
+          kind: ScaledObject
+        fieldPaths:
+          - spec.minReplicaCount
+  - source:
+      kind: ConfigMap
+      name: rhoai-llmd-params
+      fieldPath: data.kedaMaxReplicas
+    targets:
+      - select:
+          kind: ScaledObject
+        fieldPaths:
+          - spec.maxReplicaCount
+  - source:
+      kind: ConfigMap
+      name: rhoai-llmd-params
       fieldPath: data.kedaThreshold
     targets:
       - select:
