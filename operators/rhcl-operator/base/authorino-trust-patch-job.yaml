@@ -57,7 +57,9 @@ spec:
       restartPolicy: OnFailure
       containers:
         - name: patch
-          image: registry.redhat.io/openshift4/ose-cli:latest
+          # registry.redhat.io/openshift4/ose-cli rejects :latest; use the
+          # cluster's openshift/cli Imagestream (pullable on every OCP/ROSA).
+          image: image-registry.openshift-image-registry.svc:5000/openshift/cli:latest
           command:
             - /bin/bash
             - -c
