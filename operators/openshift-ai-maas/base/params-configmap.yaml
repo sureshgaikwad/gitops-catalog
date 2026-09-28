@@ -25,9 +25,9 @@ data:
   # keep sample-model requests small so MaaS can schedule without extra nodes.
   cpuRequest: "500m"
   cpuLimit: "2"
-  memoryRequest: "2Gi"
-  memoryLimit: "4Gi"
-  maxModelLen: "4096"
+  memoryRequest: "3Gi"
+  memoryLimit: "7Gi"
+  maxModelLen: "8192"
   ompNumThreads: "2"
   gatewayName: "maas-default-gateway"
   gatewayNamespace: "openshift-ingress"
