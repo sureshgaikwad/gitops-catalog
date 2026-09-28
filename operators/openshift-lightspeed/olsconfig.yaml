@@ -16,13 +16,19 @@ spec:
     providers:
       - name: red_hat_openshift_ai
         type: rhoai_vllm
-        url: "http://qwen-25-7b-predictor.models.svc.cluster.local:8080/v1"
+        # In-cluster KServe workload (HTTPS + self-signed CA via maas-model-ca)
+        url: "https://qwen25-05b-maas-kserve-workload-svc.rhoai-deploy.svc.cluster.local:8000/v1"
         credentialsSecretRef:
           name: rhoai-api-keys
         models:
-          - name: qwen-25-7b
-            url: "http://qwen-25-7b-predictor.models.svc.cluster.local:8080/v1"
+          - name: qwen25-05b
+            url: "https://qwen25-05b-maas-kserve-workload-svc.rhoai-deploy.svc.cluster.local:8000/v1"
+            contextWindowSize: 4096
+            parameters:
+              maxTokensForResponse: 1024
   ols:
     defaultProvider: red_hat_openshift_ai
-    defaultModel: qwen-25-7b
+    defaultModel: qwen25-05b
     logLevel: INFO
+    additionalCAConfigMapRef:
+      name: maas-model-ca

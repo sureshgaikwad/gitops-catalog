@@ -23,14 +23,72 @@ spec:
   template:
     containers:
       - name: main
+        # Keep image set — if omitted, KServe defaults to CUDA vLLM (fails on CPU nodes).
         image: registry.redhat.io/rhaii/vllm-cpu-rhel9@sha256:7a28b867955055a8836ea2a78e70b8bad63c1ee50e8a5f8dd95d1194f20ec489
+        # Modelcar exposes /mnt/models as a /proc symlink. With tool calling enabled,
+        # vLLM resolves that path and may call huggingface_hub with repo_id='/mnt/models'
+        # → HFValidationError. Copy into a real directory and serve from there.
+        command:
+          - /bin/bash
+          - -c
+          - |
+            set -euo pipefail
+            if [ -f /etc/profile.d/ibm-aiu-setup.sh ]; then
+              # shellcheck disable=SC1091
+              source /etc/profile.d/ibm-aiu-setup.sh
+            fi
+            MODEL_SRC=/mnt/models
+            MODEL_LOCAL=/home/vllm/local-model
+            mkdir -p /home/vllm/hf-cache
+            export HF_HUB_CACHE=/home/vllm/hf-cache
+            export TRANSFORMERS_CACHE=/home/vllm/hf-cache
+            export HF_HOME=/home/vllm/hf-cache
+            export HF_HUB_OFFLINE=1
+            export TRANSFORMERS_OFFLINE=1
+            echo "[modelcar] waiting for ${MODEL_SRC}/config.json ..."
+            for i in $(seq 1 120); do
+              if [ -f "${MODEL_SRC}/config.json" ]; then
+                echo "[modelcar] ready after ${i} attempts"
+                break
+              fi
+              sleep 2
+            done
+            test -f "${MODEL_SRC}/config.json"
+            echo "[modelcar] materializing ${MODEL_SRC} -> ${MODEL_LOCAL}"
+            rm -rf "$MODEL_LOCAL"
+            mkdir -p "$MODEL_LOCAL"
+            cp -a "${MODEL_SRC}/." "$MODEL_LOCAL/"
+            test -f "$MODEL_LOCAL/config.json"
+            ACCESS_LOG_ARGS="--disable-uvicorn-access-log"
+            VLLM_VERSION=$(vllm --version 2>/dev/null | tail -1 | awk '{print $NF}')
+            if [[ "$VLLM_VERSION" =~ ^[0-9]+\.[0-9]+ ]] && [ "$(printf '%s\n%s\n' "0.16.0" "${VLLM_VERSION}" | sort -V | head -1)" = "0.16.0" ]; then
+              ACCESS_LOG_ARGS="--disable-access-log-for-endpoints /health,/metrics,/ping"
+            fi
+            SHUTDOWN_TIMEOUT_ARGS=""
+            if [[ "$VLLM_VERSION" =~ ^[0-9]+\.[0-9]+ ]] && [ "$(printf '%s\n%s\n' "0.18.0" "${VLLM_VERSION}" | sort -V | head -1)" = "0.18.0" ]; then
+              SHUTDOWN_TIMEOUT_ARGS="--shutdown-timeout 40"
+            fi
+            CHAT_TEMPLATE=/opt/app-root/template/tool_chat_template_hermes.jinja
+            echo "[modelcar] starting vllm from ${MODEL_LOCAL}"
+            eval "exec vllm serve ${MODEL_LOCAL} \
+              --served-model-name \"qwen25-05b\" \"publishers/rhoai-deploy/models/qwen25-05b\" \
+              --port 8000 \
+              ${ACCESS_LOG_ARGS} \
+              ${SHUTDOWN_TIMEOUT_ARGS} \
+              --enable-ssl-refresh \
+              --ssl-certfile /var/run/kserve/tls/tls.crt \
+              --ssl-keyfile /var/run/kserve/tls/tls.key \
+              --chat-template ${CHAT_TEMPLATE} \
+              ${VLLM_ADDITIONAL_ARGS:-} \
+              \"$@\""
+          - "--"
         args:
           - "--dtype=bfloat16"
           - "--max-model-len=4096"
           - "--max-num-seqs=4"
           - "--enable-force-include-usage"
           - "--enforce-eager"
-          # Required for playground Knowledge / PDF (tool_choice=auto → file_search)
+          # Playground Knowledge/PDF sends tool_choice=auto (file_search)
           - "--enable-auto-tool-choice"
           - "--tool-call-parser=hermes"
         env:
@@ -44,13 +102,32 @@ spec:
             value: "0-1"
           - name: LD_PRELOAD
             value: "/usr/lib64/libomp.so"
+          - name: HF_HUB_CACHE
+            value: /home/vllm/hf-cache
+          - name: TRANSFORMERS_CACHE
+            value: /home/vllm/hf-cache
+          - name: HF_HOME
+            value: /home/vllm/hf-cache
+          - name: HF_HUB_OFFLINE
+            value: "1"
+          - name: TRANSFORMERS_OFFLINE
+            value: "1"
         resources:
           requests:
             cpu: "500m"
-            memory: 2Gi
+            memory: 3Gi
           limits:
             cpu: "2"
-            memory: 4Gi
+            memory: 7Gi
+        startupProbe:
+          httpGet:
+            path: /health
+            port: 8000
+            scheme: HTTPS
+          periodSeconds: 15
+          timeoutSeconds: 5
+          failureThreshold: 120
+          successThreshold: 1
         livenessProbe:
           httpGet:
             path: /health

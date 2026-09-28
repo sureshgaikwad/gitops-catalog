@@ -1,0 +1,111 @@
+# Copies the KServe workload self-signed CA into openshift-lightspeed so OLS
+# can call the in-cluster HTTPS model endpoint (additionalCAConfigMapRef).
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: ols-model-ca-sync
+  namespace: openshift-lightspeed
+  annotations:
+    argocd.argoproj.io/sync-wave: "1"
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: ols-model-ca-sync
+  namespace: rhoai-deploy
+  annotations:
+    argocd.argoproj.io/sync-wave: "1"
+    argocd.argoproj.io/sync-options: SkipDryRunOnMissingResource=true
+rules:
+  - apiGroups: [""]
+    resources: ["secrets"]
+    resourceNames: ["qwen25-05b-maas-kserve-self-signed-certs"]
+    verbs: ["get"]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: ols-model-ca-sync
+  namespace: openshift-lightspeed
+  annotations:
+    argocd.argoproj.io/sync-wave: "1"
+rules:
+  - apiGroups: [""]
+    resources: ["configmaps"]
+    resourceNames: ["maas-model-ca"]
+    verbs: ["get", "create", "update", "patch"]
+  - apiGroups: [""]
+    resources: ["configmaps"]
+    verbs: ["create"]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: ols-model-ca-sync-read
+  namespace: rhoai-deploy
+  annotations:
+    argocd.argoproj.io/sync-wave: "1"
+    argocd.argoproj.io/sync-options: SkipDryRunOnMissingResource=true
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: ols-model-ca-sync
+subjects:
+  - kind: ServiceAccount
+    name: ols-model-ca-sync
+    namespace: openshift-lightspeed
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: ols-model-ca-sync-write
+  namespace: openshift-lightspeed
+  annotations:
+    argocd.argoproj.io/sync-wave: "1"
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: ols-model-ca-sync
+subjects:
+  - kind: ServiceAccount
+    name: ols-model-ca-sync
+    namespace: openshift-lightspeed
+---
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: ols-model-ca-sync
+  namespace: openshift-lightspeed
+  annotations:
+    argocd.argoproj.io/sync-wave: "2"
+    argocd.argoproj.io/hook: Sync
+    argocd.argoproj.io/hook-delete-policy: BeforeHookCreation
+spec:
+  ttlSecondsAfterFinished: 600
+  backoffLimit: 6
+  template:
+    spec:
+      serviceAccountName: ols-model-ca-sync
+      restartPolicy: OnFailure
+      containers:
+        - name: sync
+          # Pullable on every OCP/ROSA (ose-cli:latest is often denied)
+          image: image-registry.openshift-image-registry.svc:5000/openshift/cli:latest
+          command:
+            - /bin/bash
+            - -c
+            - |
+              set -euo pipefail
+              for i in $(seq 1 60); do
+                if oc get secret qwen25-05b-maas-kserve-self-signed-certs -n rhoai-deploy >/dev/null 2>&1; then
+                  break
+                fi
+                echo "waiting for model TLS secret..."
+                sleep 10
+              done
+              oc get secret qwen25-05b-maas-kserve-self-signed-certs -n rhoai-deploy \
+                -o jsonpath='{.data.ca\.crt}' | base64 -d > /tmp/ca.crt
+              oc create configmap maas-model-ca -n openshift-lightspeed \
+                --from-file=ca-bundle.crt=/tmp/ca.crt \
+                --dry-run=client -o yaml | oc apply -f -
+              echo "synced maas-model-ca"
