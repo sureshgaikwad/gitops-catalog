@@ -12,23 +12,34 @@ metadata:
     app.kubernetes.io/managed-by: argocd
     app.kubernetes.io/name: openshift-lightspeed
 spec:
+  # MCP tool schemas alone are ~7k tokens; without filtering they blow the
+  # small CPU sample model's context. ToolFiltering keeps only top-K tools.
+  featureGates:
+    - ToolFiltering
   llm:
     providers:
       - name: red_hat_openshift_ai
         type: rhoai_vllm
-        # In-cluster KServe workload (HTTPS + self-signed CA via maas-model-ca)
         url: "https://qwen25-05b-maas-kserve-workload-svc.rhoai-deploy.svc.cluster.local:8000/v1"
         credentialsSecretRef:
           name: rhoai-api-keys
         models:
           - name: qwen25-05b
             url: "https://qwen25-05b-maas-kserve-workload-svc.rhoai-deploy.svc.cluster.local:8000/v1"
-            contextWindowSize: 4096
+            # Must match vLLM --max-model-len
+            contextWindowSize: 8192
             parameters:
-              maxTokensForResponse: 1024
+              maxTokensForResponse: 512
+              # Allow more of the window for tool schemas when filtering still
+              # leaves a large definition set.
+              toolBudgetRatio: 0.5
   ols:
     defaultProvider: red_hat_openshift_ai
     defaultModel: qwen25-05b
     logLevel: INFO
     additionalCAConfigMapRef:
       name: maas-model-ca
+    toolFilteringConfig:
+      topK: 5
+      threshold: 0.01
+      alpha: 0.8
