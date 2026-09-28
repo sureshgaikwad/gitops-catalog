@@ -16,7 +16,6 @@ spec:
   model:
     uri: "oci://quay.io/redhat-ai-services/modelcar-catalog:qwen2.5-0.5b-instruct"
     name: qwen25-05b-llmd
-  # replicas intentionally omitted so KEDA can own the Deployment replica count.
   router:
     scheduler: {}
     route: {}
@@ -41,7 +40,6 @@ spec:
             MODEL_LOCAL=/home/vllm/local-model
             mkdir -p /home/vllm/hf-cache
             export HF_HUB_CACHE=/home/vllm/hf-cache
-            export TRANSFORMERS_CACHE=/home/vllm/hf-cache
             export HF_HOME=/home/vllm/hf-cache
             export HF_HUB_OFFLINE=1
             export TRANSFORMERS_OFFLINE=1
@@ -58,25 +56,24 @@ spec:
             if [[ "$VLLM_VERSION" =~ ^[0-9]+\.[0-9]+ ]] && [ "$(printf '%s\n%s\n' "0.16.0" "${VLLM_VERSION}" | sort -V | head -1)" = "0.16.0" ]; then
               ACCESS_LOG_ARGS="--disable-access-log-for-endpoints /health,/metrics,/ping"
             fi
-            eval "exec vllm serve ${MODEL_LOCAL} \
-              --served-model-name \"qwen25-05b-llmd\" \"publishers/rhoai-deploy/models/qwen25-05b-llmd\" \
+            echo "[modelcar] starting vllm from ${MODEL_LOCAL}"
+            exec vllm serve "${MODEL_LOCAL}" \
+              --served-model-name "qwen25-05b-llmd" "publishers/rhoai-deploy/models/qwen25-05b-llmd" \
               --port 8000 \
               ${ACCESS_LOG_ARGS} \
               --enable-ssl-refresh \
               --ssl-certfile /var/run/kserve/tls/tls.crt \
               --ssl-keyfile /var/run/kserve/tls/tls.key \
               --chat-template /opt/app-root/template/tool_chat_template_hermes.jinja \
-              ${VLLM_ADDITIONAL_ARGS:-} \
-              \"$@\""
+              --dtype=bfloat16 \
+              --max-model-len=4096 \
+              --max-num-seqs=4 \
+              --enable-force-include-usage \
+              --enforce-eager \
+              --enable-auto-tool-choice \
+              --tool-call-parser=hermes
           - "--"
-        args:
-          - "--dtype=bfloat16"
-          - "--max-model-len=4096"
-          - "--max-num-seqs=4"
-          - "--enable-force-include-usage"
-          - "--enforce-eager"
-          - "--enable-auto-tool-choice"
-          - "--tool-call-parser=hermes"
+        args: []
         env:
           - name: VLLM_CPU_KVCACHE_SPACE
             value: "2"
