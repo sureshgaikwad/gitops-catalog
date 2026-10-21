@@ -1,0 +1,40 @@
+# Red Hat build of Karpenter NodePool (ROSA HCP AutoNode)
+# Controllers run in the hosted control plane — this catalog only manages NodePools.
+# Prerequisites: enable_karpenter=true on the cluster stack (IAM + auto_node).
+# Docs: https://docs.redhat.com/en/documentation/red_hat_openshift_service_on_aws/4/html/cluster_administration/managing-compute-nodes-using-red-hat-build-of-karpenter
+---
+apiVersion: karpenter.sh/v1
+kind: NodePool
+metadata:
+  name: default-np
+  annotations:
+    argocd.argoproj.io/sync-wave: "0"
+spec:
+  # Expire nodes after 30d (Karpenter default); consolidate underutilized capacity quickly.
+  disruption:
+    consolidationPolicy: WhenEmptyOrUnderutilized
+    consolidateAfter: 60s
+  template:
+    metadata:
+      labels:
+        autonode: "true"
+    spec:
+      requirements:
+        # Engineering constraint: Karpenter nodes must be >= 4 vCPU.
+        - key: karpenter.k8s.aws/instance-cpu
+          operator: Gte
+          values: ["4"]
+        - key: karpenter.k8s.aws/instance-category
+          operator: In
+          values: ["c", "m", "r"]
+        # Prefer on-demand for demos / Lightspeed / Gen AI Studio (override for Spot batch).
+        - key: karpenter.sh/capacity-type
+          operator: In
+          values: ["on-demand"]
+        - key: kubernetes.io/arch
+          operator: In
+          values: ["amd64"]
+      nodeClassRef:
+        group: karpenter.k8s.aws
+        kind: EC2NodeClass
+        name: default
