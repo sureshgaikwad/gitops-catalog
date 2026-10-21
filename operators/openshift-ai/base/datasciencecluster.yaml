@@ -48,6 +48,9 @@ spec:
       managementState: Removed
     ogx:
       managementState: Removed
+    # MLflow: Removed until components/mlflow-enable (GenAI Studio tracing demo).
+    mlflowoperator:
+      managementState: Removed
     trainer:
       managementState: Managed
     # MCP Lifecycle Operator (Tech Preview): required for AI Hub → MCP servers

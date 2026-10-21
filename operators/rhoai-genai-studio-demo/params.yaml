@@ -1,0 +1,12 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: rhoai-genai-studio-demo-params
+  namespace: demo
+  annotations:
+    argocd.argoproj.io/sync-wave: "0"
+data:
+  # Overridden by day-2 Terraform kustomize patches (cluster-specific).
+  maasGateway: "https://maas.example.com"
+  modelName: "qwen25-05b-maas"
+  playgroundName: "lsd-genai-playground"

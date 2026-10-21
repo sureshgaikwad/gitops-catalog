@@ -19,8 +19,14 @@ metadata:
 rules:
   - apiGroups: [""]
     resources: ["secrets"]
-    resourceNames: ["qwen25-05b-maas-kserve-self-signed-certs"]
+    # Prefer MaaS sample; allow llm-d fallback while sample model catches up.
+    resourceNames:
+      - qwen25-05b-maas-kserve-self-signed-certs
+      - qwen25-05b-llmd-kserve-self-signed-certs
     verbs: ["get"]
+  - apiGroups: [""]
+    resources: ["secrets"]
+    verbs: ["list"]
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: Role
@@ -96,16 +102,35 @@ spec:
             - -c
             - |
               set -euo pipefail
-              for i in $(seq 1 60); do
-                if oc get secret qwen25-05b-maas-kserve-self-signed-certs -n rhoai-deploy >/dev/null 2>&1; then
+              # Prefer MaaS sample TLS secret (matches OLSConfig URL); fall back to
+              # any *-kserve-self-signed-certs in rhoai-deploy (e.g. llm-d).
+              SECRET=""
+              for i in $(seq 1 90); do
+                for candidate in \
+                  qwen25-05b-maas-kserve-self-signed-certs \
+                  qwen25-05b-llmd-kserve-self-signed-certs; do
+                  if oc get secret "$candidate" -n rhoai-deploy >/dev/null 2>&1; then
+                    SECRET="$candidate"
+                    break 2
+                  fi
+                done
+                FOUND="$(oc get secrets -n rhoai-deploy -o name 2>/dev/null \
+                  | grep -E 'kserve-self-signed-certs$' | head -1 | cut -d/ -f2 || true)"
+                if [ -n "${FOUND}" ]; then
+                  SECRET="${FOUND}"
                   break
                 fi
-                echo "waiting for model TLS secret..."
+                echo "waiting for model TLS secret in rhoai-deploy..."
                 sleep 10
               done
-              oc get secret qwen25-05b-maas-kserve-self-signed-certs -n rhoai-deploy \
+              if [ -z "${SECRET}" ]; then
+                echo "ERROR: no *-kserve-self-signed-certs secret found in rhoai-deploy" >&2
+                exit 1
+              fi
+              echo "using TLS secret: ${SECRET}"
+              oc get secret "${SECRET}" -n rhoai-deploy \
                 -o jsonpath='{.data.ca\.crt}' | base64 -d > /tmp/ca.crt
               oc create configmap maas-model-ca -n openshift-lightspeed \
                 --from-file=ca-bundle.crt=/tmp/ca.crt \
                 --dry-run=client -o yaml | oc apply -f -
-              echo "synced maas-model-ca"
+              echo "synced maas-model-ca from ${SECRET}"
