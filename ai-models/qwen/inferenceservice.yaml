@@ -5,7 +5,8 @@ metadata:
   namespace: models
   annotations:
     openshift.io/display-name: qwen-2.5-7b-instruct
-    serving.kserve.io/deploymentMode: RawDeployment
+    # Controller normalizes RawDeployment → Standard; keep git in sync.
+    serving.kserve.io/deploymentMode: Standard
     security.opendatahub.io/enable-auth: "false"
     networking.kserve.io/visibility: exposed
     argocd.argoproj.io/sync-wave: "1"

@@ -87,7 +87,6 @@ spec:
               --enable-auto-tool-choice \
               --tool-call-parser=hermes
           - "--"
-        args: []
         env:
           - name: VLLM_LOGGING_LEVEL
             value: INFO
